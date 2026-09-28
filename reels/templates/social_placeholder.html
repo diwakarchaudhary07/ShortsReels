@@ -1,0 +1,22 @@
+{% extends "base.html" %} {% block title %}Social | Reelo{% endblock %}
+<!-- Separate Django template blocks. -->
+{% block content %}
+<section class="mx-auto" style="max-width: 760px">
+  <header class="mb-4">
+    <p
+      class="small text-uppercase fw-bold mb-1"
+      style="color: var(--reelo-red)"
+    >
+      Reelo
+    </p>
+    <h1 class="h2 mb-0">{{ page_title }}</h1>
+  </header>
+  <div class="social-empty">
+    <i class="bi {{ page_icon }}" aria-hidden="true"></i>
+    <h2 class="h5">{{ page_message }}</h2>
+    <a class="btn btn-primary mt-2" href="{% url 'reels_feed' %}"
+      >Back to Reels</a
+    >
+  </div>
+</section>
+{% endblock %}

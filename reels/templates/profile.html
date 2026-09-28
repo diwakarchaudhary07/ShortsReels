@@ -1,0 +1,272 @@
+{% extends "base.html" %} {% block title %}Profile | ShortsReels{% endblock %}
+{% block content %} {% with displayed_user=profile_user|default:user %}
+<style>
+  :root {
+    --profile-orange: #fa9601;
+    --profile-red: #fb3f3f;
+    --profile-ink: #17191d;
+    --profile-muted: #70747b;
+  }
+
+  .profile-page {
+    max-width: 900px;
+    margin-inline: auto;
+  }
+  .profile-panel {
+    overflow: hidden;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 12px 36px rgb(23 25 29 / 6%);
+  }
+  .profile-heading {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 2rem;
+    color: #fff;
+    background: var(--profile-ink);
+  }
+  .profile-heading::before {
+    position: absolute;
+    inset: 0 0 auto;
+    height: 4px;
+    background: linear-gradient(
+      90deg,
+      var(--profile-orange),
+      var(--profile-red)
+    );
+    content: "";
+  }
+  .profile-avatar {
+    flex: 0 0 96px;
+    width: 96px;
+    height: 96px;
+    border: 3px solid var(--profile-orange);
+    border-radius: 50%;
+    object-fit: cover;
+    background: #292c31;
+  }
+  .profile-avatar-placeholder {
+    display: grid;
+    place-items: center;
+    color: var(--profile-orange);
+    font-size: 2rem;
+    font-weight: 700;
+  }
+  .profile-handle {
+    color: #d6d7d9;
+  }
+  .profile-stats {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+  }
+  .profile-stat strong {
+    display: block;
+    font-size: 1.15rem;
+  }
+  .profile-stat span {
+    color: #c4c6c9;
+    font-size: 0.85rem;
+  }
+  .profile-content {
+    padding: 2rem;
+  }
+  .profile-section-title {
+    margin-bottom: 1.25rem;
+    color: var(--profile-ink);
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+  .profile-form .form-label {
+    font-weight: 600;
+  }
+  .profile-form .form-control:focus {
+    border-color: var(--profile-orange);
+    box-shadow: 0 0 0 0.2rem rgb(250 150 1 / 18%);
+  }
+  .profile-save {
+    border-color: var(--profile-orange);
+    background: var(--profile-orange);
+    color: var(--profile-ink);
+    font-weight: 700;
+  }
+  .profile-save:hover {
+    border-color: var(--profile-red);
+    background: var(--profile-red);
+    color: #fff;
+  }
+  .profile-link {
+    color: #c45e00;
+    overflow-wrap: anywhere;
+  }
+  .profile-info-label {
+    color: var(--profile-muted);
+    font-size: 0.85rem;
+  }
+  @media (max-width: 575.98px) {
+    .profile-heading,
+    .profile-content {
+      padding: 1.25rem;
+    }
+    .profile-heading {
+      align-items: flex-start;
+      gap: 0.9rem;
+    }
+    .profile-avatar {
+      flex-basis: 72px;
+      width: 72px;
+      height: 72px;
+    }
+    .profile-stats {
+      gap: 1.1rem;
+    }
+  }
+</style>
+
+<section class="profile-page py-2">
+  <div class="profile-panel">
+    <header class="profile-heading">
+      {% if can_view_profile and profile and profile.profile_image %}
+      <img
+        class="profile-avatar"
+        src="{{ profile.profile_image.url }}"
+        alt="{{ displayed_user.username }}'s profile photo"
+      />
+      {% elif can_view_profile and displayed_user.profile_image %}
+      <img
+        class="profile-avatar"
+        src="{{ displayed_user.profile_image.url }}"
+        alt="{{ displayed_user.username }}'s profile photo"
+      />
+      {% else %}
+      <div class="profile-avatar profile-avatar-placeholder" aria-hidden="true">
+        {{ displayed_user.username|first|upper }}
+      </div>
+      {% endif %}
+      <div class="min-w-0">
+        <h1 class="h3 mb-1">
+          {{ displayed_user.full_name|default:displayed_user.username }}
+        </h1>
+        <div class="profile-handle">@{{ displayed_user.username }}</div>
+        {% if can_view_profile and profile %}
+        <div class="profile-stats" aria-label="Profile activity">
+          <div class="profile-stat">
+            <strong>{{ profile.followers_count }}</strong><span>Followers</span>
+          </div>
+          <div class="profile-stat">
+            <strong>{{ profile.following_count }}</strong><span>Following</span>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </header>
+
+    {% if not can_view_profile %}
+    <div class="profile-content">
+      <h2 class="h5 mb-2">This account is private</h2>
+      <p class="text-body-secondary mb-0">
+        The profile details are only visible to the account owner.
+      </p>
+    </div>
+    {% elif is_owner %}
+    <div class="profile-content">
+      <h2 class="profile-section-title">Edit profile</h2>
+      <form
+        class="profile-form"
+        method="post"
+        enctype="multipart/form-data"
+        novalidate
+      >
+        {% csrf_token %} {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+        {% endif %}
+        <div class="row g-3">
+          <div class="col-12">
+            <label
+              class="form-label"
+              for="{{ form.profile_image.id_for_label }}"
+              >Profile image</label
+            >
+            {{ form.profile_image }} {{ form.profile_image.errors }}
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="{{ form.bio.id_for_label }}"
+              >Bio</label
+            >
+            {{ form.bio }}
+            <div class="form-text">Up to 500 characters.</div>
+            {{ form.bio.errors }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.website.id_for_label }}"
+              >Website</label
+            >
+            {{ form.website }} {{ form.website.errors }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="{{ form.location.id_for_label }}"
+              >Location</label
+            >
+            {{ form.location }} {{ form.location.errors }}
+          </div>
+          <div class="col-md-6">
+            <label
+              class="form-label"
+              for="{{ form.date_of_birth.id_for_label }}"
+              >Date of birth</label
+            >
+            {{ form.date_of_birth }} {{ form.date_of_birth.errors }}
+          </div>
+          <div class="col-12">
+            <div class="form-check">
+              {{ form.is_private }}
+              <label
+                class="form-check-label"
+                for="{{ form.is_private.id_for_label }}"
+                >Make my profile private</label
+              >
+            </div>
+          </div>
+        </div>
+        <div class="d-flex justify-content-end mt-4">
+          <button class="btn profile-save px-4" type="submit">
+            Save profile
+          </button>
+        </div>
+      </form>
+    </div>
+    {% else %}
+    <div class="profile-content">
+      {% if profile.bio %}
+      <p class="mb-4">{{ profile.bio|linebreaksbr }}</p>
+      {% endif %}
+      <div class="row g-3">
+        {% if profile.location %}
+        <div class="col-sm-6">
+          <div class="profile-info-label">Location</div>
+          <div>{{ profile.location }}</div>
+        </div>
+        {% endif %} {% if profile.website %}
+        <div class="col-sm-6">
+          <div class="profile-info-label">Website</div>
+          <a
+            class="profile-link"
+            href="{{ profile.website }}"
+            target="_blank"
+            rel="noopener noreferrer"
+            >{{ profile.website }}</a
+          >
+        </div>
+        {% endif %}
+      </div>
+      {% if not profile.bio and not profile.location and not profile.website %}
+      <p class="text-body-secondary mb-0">No profile details yet.</p>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endwith %} {% endblock %}

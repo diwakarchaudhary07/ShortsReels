@@ -1,0 +1,32 @@
+{% extends "base.html" %} {% block content %}
+<section class="py-4">
+  <h1 class="h2">Search users</h1>
+  <form class="row g-2 mb-4" method="get" action="{% url 'search' %}">
+    <div class="col-sm-8 col-md-6">
+      <label class="visually-hidden" for="searchQuery">Username</label>
+      <input
+        class="form-control"
+        id="searchQuery"
+        name="q"
+        type="search"
+        value="{{ query }}"
+        placeholder="Search by username"
+      />
+    </div>
+    <div class="col-auto">
+      <button class="btn btn-primary" type="submit">Search</button>
+    </div>
+  </form>
+  {% if query %}
+  <h2 class="h5">Results</h2>
+  {% for result in users %}
+  <p class="mb-2">
+    <a href="{% url 'profile_detail' username=result.username %}">
+      {{ result.full_name|default:result.username }}
+    </a>
+  </p>
+  {% empty %}
+  <p class="text-body-secondary">No users found.</p>
+  {% endfor %} {% endif %}
+</section>
+{% endblock %}

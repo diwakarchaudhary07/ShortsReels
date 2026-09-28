@@ -1,0 +1,110 @@
+{% extends "base.html" %} {% block title %}Reels | Reelo{% endblock %}
+<!-- Separate Django template blocks. -->
+{% block main_class %}reel-main{% endblock %}
+<!-- Separate Django template blocks. -->
+{% block content %} {% if reels %}
+<section class="reel-feed" aria-label="Reels feed">
+  {% for reel in reels %}
+  <article class="reel-slide">
+    <div class="reel-frame">
+      <video
+        class="reel-video"
+        src="{{ reel.video_file.url }}"
+        controls
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="metadata"
+      >
+        Your browser does not support video playback.
+      </video>
+      <div class="reel-caption">
+        <a href="{% url 'profile_detail' username=reel.user.username %}"
+          >@{{ reel.user.username }}</a
+        >
+        {% if reel.caption %}
+        <p>{{ reel.caption|linebreaksbr }}</p>
+        {% endif %}
+      </div>
+    </div>
+    <div class="reel-actions" aria-label="Reel actions">
+      <button
+        class="reel-action"
+        type="button"
+        aria-label="Like reel"
+        aria-pressed="false"
+        data-toggle-action
+      >
+        <i class="bi bi-heart" aria-hidden="true"></i>
+      </button>
+      <button
+        class="reel-action"
+        type="button"
+        aria-label="Comment on reel"
+        title="Comments"
+      >
+        <i class="bi bi-chat" aria-hidden="true"></i>
+      </button>
+      <button
+        class="reel-action"
+        type="button"
+        aria-label="Share reel"
+        data-share-url="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}"
+      >
+        <i class="bi bi-send" aria-hidden="true"></i>
+      </button>
+      <button
+        class="reel-action"
+        type="button"
+        aria-label="Save reel"
+        aria-pressed="false"
+        data-toggle-action
+      >
+        <i class="bi bi-bookmark" aria-hidden="true"></i>
+      </button>
+    </div>
+  </article>
+  {% endfor %}
+</section>
+{% else %}
+<section class="reel-empty">
+  <div class="reel-empty-mark">
+    <i class="bi bi-play-btn" aria-hidden="true"></i>
+  </div>
+  <h1 class="h3">The feed is waiting</h1>
+  <p class="text-body-secondary">Upload the first reel and start the scroll.</p>
+  <a class="btn btn-primary" href="{% url 'create_reel' %}">Upload a reel</a>
+</section>
+{% endif %} {% endblock %}
+<!-- Separate Django template blocks. -->
+{% block extra_scripts %}
+<script>
+  document.querySelectorAll("[data-toggle-action]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const active = button.getAttribute("aria-pressed") !== "true";
+      button.setAttribute("aria-pressed", String(active));
+      const icon = button.querySelector(".bi");
+      if (button.getAttribute("aria-label") === "Like reel") {
+        icon.classList.toggle("bi-heart-fill", active);
+        icon.classList.toggle("bi-heart", !active);
+      } else {
+        icon.classList.toggle("bi-bookmark-fill", active);
+        icon.classList.toggle("bi-bookmark", !active);
+      }
+    });
+  });
+
+  document.querySelectorAll("[data-share-url]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const shareData = { title: "Reelo", url: button.dataset.shareUrl };
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(shareData.url);
+        button.setAttribute("aria-label", "Reel link copied");
+      }
+    });
+  });
+</script>
+{% endblock %}

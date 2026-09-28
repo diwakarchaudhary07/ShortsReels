@@ -1,0 +1,241 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}ShortsReels{% endblock %}</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{% static 'css/reelo.css' %}" />
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body>
+    <header class="site-topbar">
+      <nav class="site-topbar-inner" aria-label="Top navigation">
+        <div class="topbar-start">
+          <a
+            class="topbar-icon topbar-create"
+            href="{% url 'create_reel' %}"
+            aria-label="Create a post or upload a reel"
+            title="Create post"
+          >
+            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+          </a>
+        </div>
+        <a class="topbar-brand" href="{% url 'home' %}" aria-label="Reelo home">
+          <img class="topbar-logo" src="{% static 'logo.png' %}" alt="Reelo" />
+        </a>
+        <div class="topbar-actions">
+          <a
+            class="topbar-icon"
+            href="{% url 'notifications' %}"
+            aria-label="Notifications"
+            title="Notifications"
+          >
+            <i class="bi bi-heart" aria-hidden="true"></i>
+            {% if unread_notifications_count %}
+            <span
+              class="nav-badge"
+              aria-label="{{ unread_notifications_count }} unread notifications"
+              >{{ unread_notifications_count }}</span
+            >
+            {% endif %}
+          </a>
+          {% if user.is_authenticated %}
+          <form class="topbar-logout" method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button
+              class="topbar-icon"
+              type="submit"
+              aria-label="Log out"
+              title="Log out"
+            >
+              <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+            </button>
+          </form>
+          {% else %}
+          <a
+            class="topbar-icon"
+            href="{% url 'login' %}"
+            aria-label="Log in"
+            title="Log in"
+          >
+            <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+          </a>
+          {% endif %}
+        </div>
+      </nav>
+    </header>
+
+    <main class="site-main {% block main_class %}container{% endblock %}">
+      {% if messages %}
+      <div class="site-messages" aria-live="polite">
+        {% for message in messages %}
+        <div
+          class="alert alert-{{ message.tags|default:'info' }}"
+          role="status"
+        >
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %} {% block content %}{% endblock %}
+    </main>
+
+    <nav class="site-bottomnav" aria-label="Main navigation">
+      <div class="bottomnav-inner">
+        <a
+          class="bottom-nav-link{% if request.resolver_match.url_name == 'home' %} is-active{% endif %}"
+          href="{% url 'home' %}"
+          {%
+          if
+          request.resolver_match.url_name=""
+          ="home"
+          %}
+          aria-current="page"
+          {%
+          endif
+          %}
+        >
+          <span class="bottom-nav-icon-wrap"
+            ><i class="bi bi-house-door" aria-hidden="true"></i
+          ></span>
+          <span>Home</span>
+        </a>
+        <a
+          class="bottom-nav-link{% if request.resolver_match.url_name == 'reels_feed' %} is-active{% endif %}"
+          href="{% url 'reels_feed' %}"
+          {%
+          if
+          request.resolver_match.url_name=""
+          ="reels_feed"
+          %}
+          aria-current="page"
+          {%
+          endif
+          %}
+        >
+          <span class="bottom-nav-icon-wrap"
+            ><i class="bi bi-play-btn" aria-hidden="true"></i
+          ></span>
+          <span>Reels</span>
+        </a>
+        <a
+          class="bottom-nav-link{% if request.resolver_match.url_name == 'messages' %} is-active{% endif %}"
+          href="{% url 'messages' %}"
+          {%
+          if
+          request.resolver_match.url_name=""
+          ="messages"
+          %}
+          aria-current="page"
+          {%
+          endif
+          %}
+        >
+          <span class="bottom-nav-icon-wrap">
+            <i class="bi bi-chat-dots" aria-hidden="true"></i>
+            {% if unread_messages_count %}<span
+              class="nav-badge"
+              aria-label="{{ unread_messages_count }} unread messages"
+              >{{ unread_messages_count }}</span
+            >{% endif %}
+          </span>
+          <span>Message</span>
+        </a>
+        <a
+          class="bottom-nav-link{% if request.resolver_match.url_name == 'chat' %} is-active{% endif %}"
+          href="{% url 'chat' %}"
+          {%
+          if
+          request.resolver_match.url_name=""
+          ="chat"
+          %}
+          aria-current="page"
+          {%
+          endif
+          %}
+        >
+          <span class="bottom-nav-icon-wrap">
+            <i class="bi bi-chat-left-text" aria-hidden="true"></i>
+            {% if unread_chats_count %}<span
+              class="nav-badge"
+              aria-label="{{ unread_chats_count }} unread chats"
+              >{{ unread_chats_count }}</span
+            >{% endif %}
+          </span>
+          <span>Chat</span>
+        </a>
+        <a
+          class="bottom-nav-link{% if request.resolver_match.url_name == 'search' %} is-active{% endif %}"
+          href="{% url 'search' %}"
+          {%
+          if
+          request.resolver_match.url_name=""
+          ="search"
+          %}
+          aria-current="page"
+          {%
+          endif
+          %}
+        >
+          <span class="bottom-nav-icon-wrap"
+            ><i class="bi bi-search" aria-hidden="true"></i
+          ></span>
+          <span>Search</span>
+        </a>
+        <a
+          class="bottom-nav-link{% if request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'profile_detail' %} is-active{% endif %}"
+          href="{% if user.is_authenticated %}{% url 'profile' %}{% else %}{% url 'login' %}{% endif %}"
+          {%
+          if
+          request.resolver_match.url_name=""
+          ="profile"
+          or
+          request.resolver_match.url_name=""
+          ="profile_detail"
+          %}
+          aria-current="page"
+          {%
+          endif
+          %}
+        >
+          <span class="bottom-nav-icon-wrap">
+            {% if user.is_authenticated and user.profile.profile_image %}
+            <img
+              class="bottom-nav-avatar"
+              src="{{ user.profile.profile_image.url }}"
+              alt=""
+            />
+            {% elif user.is_authenticated and user.profile_image %}
+            <img
+              class="bottom-nav-avatar"
+              src="{{ user.profile_image.url }}"
+              alt=""
+            />
+            {% else %}
+            <i class="bi bi-person-circle" aria-hidden="true"></i>
+            {% endif %}
+          </span>
+          <span>Profile</span>
+        </a>
+      </div>
+    </nav>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    {% block extra_scripts %}{% endblock %}
+  </body>
+</html>

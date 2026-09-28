@@ -1,0 +1,37 @@
+{% extends "base.html" %} {% block title %}Reelo | Home{% endblock %}
+<!-- Separate Django template blocks. -->
+{% block content %}
+<section class="home-welcome py-3 py-md-5">
+  <div class="row align-items-center g-4">
+    <div class="col-lg-7">
+      <p
+        class="text-uppercase fw-bold small mb-2"
+        style="color: var(--reelo-red)"
+      >
+        Your short-video space
+      </p>
+      <h1 class="display-5 fw-bold mb-3">
+        A little scroll.<br />A lot of Reelo.
+      </h1>
+      <p class="lead text-body-secondary mb-4">
+        Find your next favorite moment in the Reels feed.
+      </p>
+      <a class="btn btn-primary btn-lg" href="{% url 'reels_feed' %}"
+        >Explore Reels</a
+      >
+    </div>
+    <div class="col-lg-5">
+      <div class="social-empty">
+        <i class="bi bi-play-btn" aria-hidden="true"></i>
+        <h2 class="h5">Your feed is ready</h2>
+        <p class="text-body-secondary mb-3">
+          Watch the latest videos or share one of your own.
+        </p>
+        <a class="btn btn-outline-dark" href="{% url 'create_reel' %}"
+          >Create a reel</a
+        >
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
