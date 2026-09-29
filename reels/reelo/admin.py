@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import Profile, Reel, User
+from .models import Post, PostImage, Profile, Reel, Song, User
 
 
 class ProfileInline(admin.StackedInline):
@@ -33,6 +33,24 @@ class ProfileAdmin(admin.ModelAdmin):
 class ReelAdmin(admin.ModelAdmin):
 	list_display = ("user", "caption", "created_at")
 	search_fields = ("user__username", "caption")
+
+
+class PostImageInline(admin.TabularInline):
+	model = PostImage
+	extra = 0
+
+
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+	list_display = ("user", "song", "created_at")
+	search_fields = ("user__username", "caption", "song__title")
+	inlines = (PostImageInline,)
+
+
+@admin.register(Song)
+class SongAdmin(admin.ModelAdmin):
+	list_display = ("title", "artist", "created_at")
+	search_fields = ("title", "artist")
 
 admin.site.site_header = "ShortsReels administration"
 admin.site.site_title = "ShortsReels admin"

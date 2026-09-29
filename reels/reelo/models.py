@@ -66,3 +66,51 @@ class Reel(models.Model):
 
 	def __str__(self):
 		return self.caption or f"Reel by {self.user.username}"
+
+
+class Song(models.Model):
+	title = models.CharField(max_length=160)
+	artist = models.CharField(max_length=160, blank=True)
+	audio_file = models.FileField(upload_to="songs/")
+	created_at = models.DateTimeField(auto_now_add=True)
+
+	class Meta:
+		ordering = ("title", "artist")
+
+	def __str__(self):
+		return f"{self.title} - {self.artist}" if self.artist else self.title
+
+
+class Post(models.Model):
+	user = models.ForeignKey(
+		settings.AUTH_USER_MODEL,
+		on_delete=models.CASCADE,
+		related_name="posts",
+	)
+	caption = models.TextField(max_length=2200, blank=True)
+	song = models.ForeignKey(
+		Song,
+		on_delete=models.SET_NULL,
+		null=True,
+		blank=True,
+		related_name="posts",
+	)
+	created_at = models.DateTimeField(auto_now_add=True)
+
+	class Meta:
+		ordering = ("-created_at",)
+
+	def __str__(self):
+		return f"Post by {self.user.username}"
+
+
+class PostImage(models.Model):
+	post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="images")
+	image = models.ImageField(upload_to="posts/")
+	position = models.PositiveIntegerField(default=0)
+
+	class Meta:
+		ordering = ("position", "pk")
+
+	def __str__(self):
+		return f"Image {self.position + 1} for {self.post}"
