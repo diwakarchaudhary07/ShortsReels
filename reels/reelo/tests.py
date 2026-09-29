@@ -1,4 +1,5 @@
 from datetime import date
+from io import BytesIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -7,8 +8,9 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.urls import reverse
+from PIL import Image
 
-from .models import Profile, Reel
+from .models import Post, Profile, Reel, Song
 
 
 class CustomUserTests(TestCase):
@@ -93,6 +95,7 @@ class ReelNavigationTests(TestCase):
 			"search",
 			"profile",
 			"create_reel",
+			"create_post",
 			"notifications",
 		):
 			with self.subTest(route_name=route_name):
@@ -124,3 +127,74 @@ class ReelNavigationTests(TestCase):
 				self.assertContains(feed_response, "First reel")
 				self.assertContains(feed_response, 'class="reel-video"')
 				self.assertContains(feed_response, reel.video_file.url)
+
+
+class PostCreationTests(TestCase):
+	def setUp(self):
+		self.user = get_user_model().objects.create_user(
+			username="post-creator",
+			password="test-password",
+			full_name="Post Creator",
+		)
+		self.client.force_login(self.user)
+
+	def make_image(self, name, color):
+		image_data = BytesIO()
+		Image.new("RGB", (8, 8), color).save(image_data, format="JPEG")
+		return SimpleUploadedFile(name, image_data.getvalue(), content_type="image/jpeg")
+
+	def test_create_post_renders_photo_and_editor_controls(self):
+		response = self.client.get(reverse("create_post"))
+
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, "Select photos")
+		self.assertContains(response, "Audio")
+		self.assertContains(response, "Overlay")
+		self.assertContains(response, "Ratio")
+
+	def test_uploaded_photos_caption_and_song_are_saved(self):
+		with TemporaryDirectory() as media_root:
+			with override_settings(MEDIA_ROOT=media_root):
+				song = Song.objects.create(
+					title="Evening",
+					artist="Example Artist",
+					audio_file=SimpleUploadedFile(
+						"evening.mp3", b"audio-data", content_type="audio/mpeg"
+					),
+				)
+				response = self.client.post(
+					reverse("create_post"),
+					{
+						"caption": "A good day",
+						"song_id": str(song.pk),
+						"images": [
+							self.make_image("first.jpg", "red"),
+							self.make_image("second.jpg", "blue"),
+						],
+					},
+				)
+
+				post = Post.objects.get(user=self.user)
+				self.assertRedirects(response, reverse("profile"))
+				self.assertEqual(post.caption, "A good day")
+				self.assertEqual(post.song, song)
+				self.assertEqual(post.images.count(), 2)
+				self.assertEqual(
+					list(post.images.values_list("position", flat=True)), [0, 1]
+				)
+				for post_image in post.images.all():
+					self.assertTrue(Path(post_image.image.path).is_file())
+
+	def test_invalid_image_is_rejected_without_creating_post(self):
+		response = self.client.post(
+			reverse("create_post"),
+			{
+				"images": SimpleUploadedFile(
+					"not-an-image.jpg", b"not image data", content_type="image/jpeg"
+				),
+			},
+		)
+
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, "not a valid image")
+		self.assertFalse(Post.objects.filter(user=self.user).exists())

@@ -1,0 +1,728 @@
+{% extends "base.html" %} {% block title %} Create post | Reelo {% endblock %}
+{% block content %}
+<section class="post-composer mx-auto" aria-labelledby="post-title">
+  <header class="post-composer-heading">
+    <div>
+      <p class="post-eyebrow">Share a moment</p>
+      <h1 class="h3 mb-0" id="post-title">Create post</h1>
+    </div>
+    <a class="btn btn-outline-secondary btn-sm" href="{% url 'home' %}"
+      >Cancel</a
+    >
+  </header>
+
+  {% if errors %}
+  <div class="alert alert-danger" role="alert">
+    {% for error in errors %}
+    <div>{{ error }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <form id="post-form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input
+      id="photo-input"
+      class="visually-hidden"
+      type="file"
+      name="images"
+      accept="image/*"
+      multiple
+    />
+    <input id="song-id" type="hidden" name="song_id" value="" />
+
+    <section class="post-step" id="selection-step" aria-label="Select photos">
+      <div class="post-step-heading">
+        <div>
+          <h2 class="h5 mb-1">Choose your photos</h2>
+          <p class="text-secondary mb-0">
+            Select up to 10 photos for your post.
+          </p>
+        </div>
+        <span class="post-count" id="photo-count">0 / 10</span>
+      </div>
+      <div class="post-upload-empty" id="upload-empty">
+        <span class="post-upload-mark"
+          ><i class="bi bi-images" aria-hidden="true"></i
+        ></span>
+        <p class="fw-semibold mb-1">Your post starts with a photo</p>
+        <p class="small text-secondary mb-3">
+          Choose an image from your device or take one now.
+        </p>
+        <div class="d-flex flex-wrap justify-content-center gap-2">
+          <button class="btn btn-outline-dark" id="camera-button" type="button">
+            <i class="bi bi-camera me-1" aria-hidden="true"></i>Camera
+          </button>
+          <button
+            class="btn btn-primary"
+            id="select-photos-button"
+            type="button"
+          >
+            <i class="bi bi-image me-1" aria-hidden="true"></i>Select photos
+          </button>
+        </div>
+      </div>
+      <div class="post-selection-preview" id="selection-preview" hidden>
+        <img id="selection-image" alt="Selected photo preview" />
+        <div class="post-selection-actions">
+          <button
+            class="btn btn-outline-dark"
+            id="add-photos-button"
+            type="button"
+          >
+            <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Add photos
+          </button>
+          <button
+            class="btn btn-primary"
+            id="selection-next"
+            type="button"
+            disabled
+          >
+            Next<i class="bi bi-arrow-right ms-2" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="post-step" id="editor-step" aria-label="Edit post" hidden>
+      <div class="post-editor-heading">
+        <button
+          class="btn btn-light post-back-button"
+          id="editor-back"
+          type="button"
+          aria-label="Back to photo selection"
+        >
+          <i class="bi bi-arrow-left" aria-hidden="true"></i><span>Back</span>
+        </button>
+        <span class="small text-secondary">Edit post</span>
+        <span class="post-count" id="editor-photo-count">1 / 1</span>
+      </div>
+
+      <div class="post-song-row">
+        <span class="post-song-icon"
+          ><i class="bi bi-music-note-beamed" aria-hidden="true"></i
+        ></span>
+        <div class="post-song-copy">
+          <span class="small text-secondary">Selected song</span>
+          <strong id="selected-song-title">No song selected</strong>
+        </div>
+        <button
+          class="post-icon-button"
+          id="song-picker-button"
+          type="button"
+          aria-label="Select or change song"
+          title="Select or change song"
+        >
+          <i class="bi bi-plus-lg" aria-hidden="true"></i>
+        </button>
+      </div>
+      <audio class="post-audio-preview" id="song-audio" controls hidden></audio>
+
+      <div class="post-editor-main">
+        <div
+          class="post-preview-frame"
+          id="post-preview-frame"
+          data-ratio="4:5"
+        >
+          <img id="editor-image" alt="Post photo preview" />
+          <span class="post-image-overlay" id="image-overlay" hidden></span>
+          <span class="post-text-overlay" id="text-overlay" hidden></span>
+        </div>
+        <div
+          class="post-photo-strip"
+          id="photo-strip"
+          aria-label="Selected photos"
+        ></div>
+      </div>
+
+      <div class="post-tools" role="toolbar" aria-label="Photo editing tools">
+        <button
+          class="post-tool-button"
+          type="button"
+          data-tool="audio"
+          aria-label="Audio"
+        >
+          <span class="post-tool-icon"
+            ><i class="bi bi-music-note-list" aria-hidden="true"></i
+            ><i class="bi bi-plus post-tool-plus" aria-hidden="true"></i></span
+          ><span>Audio</span>
+        </button>
+        <button
+          class="post-tool-button"
+          type="button"
+          data-tool="text"
+          aria-label="Text"
+        >
+          <span class="post-tool-icon"
+            ><i class="bi bi-type" aria-hidden="true"></i></span
+          ><span>Text</span>
+        </button>
+        <button
+          class="post-tool-button"
+          type="button"
+          data-tool="overlay"
+          aria-label="Overlay"
+        >
+          <span class="post-tool-icon"
+            ><i class="bi bi-layers" aria-hidden="true"></i></span
+          ><span>Overlay</span>
+        </button>
+        <button
+          class="post-tool-button"
+          type="button"
+          data-tool="filter"
+          aria-label="Filter"
+        >
+          <span class="post-tool-icon"
+            ><i class="bi bi-circle-half" aria-hidden="true"></i></span
+          ><span>Filter</span>
+        </button>
+        <button
+          class="post-tool-button"
+          type="button"
+          data-tool="edit"
+          aria-label="Edit"
+        >
+          <span class="post-tool-icon"
+            ><i class="bi bi-sliders" aria-hidden="true"></i></span
+          ><span>Edit</span>
+        </button>
+        <button
+          class="post-tool-button"
+          type="button"
+          data-tool="ratio"
+          aria-label="Ratio"
+        >
+          <span class="post-tool-icon"
+            ><i class="bi bi-aspect-ratio" aria-hidden="true"></i></span
+          ><span>Ratio</span>
+        </button>
+      </div>
+
+      <div class="post-tool-panel" id="tool-panel" hidden>
+        <div class="post-tool-pane" data-pane="text" hidden>
+          <label class="form-label small fw-semibold" for="overlay-text-input"
+            >Text on photo</label
+          >
+          <input
+            class="form-control form-control-sm"
+            id="overlay-text-input"
+            type="text"
+            maxlength="80"
+            placeholder="Write something..."
+          />
+        </div>
+        <div class="post-tool-pane" data-pane="overlay" hidden>
+          <label class="form-label small fw-semibold" for="location-input"
+            >Location overlay</label
+          >
+          <div class="input-group input-group-sm">
+            <input
+              class="form-control"
+              id="location-input"
+              type="text"
+              maxlength="60"
+              placeholder="Add a location"
+            />
+            <button
+              class="btn btn-outline-secondary"
+              id="location-toggle"
+              type="button"
+              aria-pressed="false"
+            >
+              Show
+            </button>
+          </div>
+          <button
+            class="btn btn-link btn-sm px-0"
+            id="clear-overlay"
+            type="button"
+          >
+            Clear overlay
+          </button>
+        </div>
+        <div class="post-tool-pane" data-pane="filter" hidden>
+          <div class="post-choice-row" role="group" aria-label="Photo filters">
+            <button
+              class="post-choice is-selected"
+              type="button"
+              data-filter="none"
+            >
+              Original
+            </button>
+            <button class="post-choice" type="button" data-filter="mono">
+              Mono
+            </button>
+            <button class="post-choice" type="button" data-filter="warm">
+              Warm
+            </button>
+            <button class="post-choice" type="button" data-filter="fade">
+              Fade
+            </button>
+          </div>
+        </div>
+        <div class="post-tool-pane" data-pane="edit" hidden>
+          <label class="post-range-label" for="brightness-input"
+            ><span>Brightness</span
+            ><input
+              id="brightness-input"
+              type="range"
+              min="70"
+              max="130"
+              value="100"
+          /></label>
+          <label class="post-range-label" for="contrast-input"
+            ><span>Contrast</span
+            ><input
+              id="contrast-input"
+              type="range"
+              min="70"
+              max="130"
+              value="100"
+          /></label>
+          <button
+            class="btn btn-outline-secondary btn-sm mt-2"
+            id="rotate-button"
+            type="button"
+          >
+            <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>Rotate
+          </button>
+        </div>
+        <div class="post-tool-pane" data-pane="ratio" hidden>
+          <div class="post-choice-row" role="group" aria-label="Photo ratio">
+            <button class="post-choice" type="button" data-ratio="1:1">
+              1:1
+            </button>
+            <button
+              class="post-choice is-selected"
+              type="button"
+              data-ratio="4:5"
+            >
+              4:5
+            </button>
+            <button class="post-choice" type="button" data-ratio="16:9">
+              16:9
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="post-editor-footer">
+        <div
+          class="post-photo-strip post-photo-strip-footer"
+          id="editor-photo-strip"
+          aria-label="Selected photos and add photos"
+        ></div>
+        <button
+          class="btn btn-primary post-next-button"
+          id="editor-next"
+          type="button"
+        >
+          Next<i class="bi bi-arrow-right ms-2" aria-hidden="true"></i>
+        </button>
+      </div>
+    </section>
+
+    <section class="post-step" id="share-step" aria-label="Share post" hidden>
+      <div class="post-editor-heading">
+        <button
+          class="btn btn-light post-back-button"
+          id="share-back"
+          type="button"
+          aria-label="Back to editor"
+        >
+          <i class="bi bi-arrow-left" aria-hidden="true"></i><span>Back</span>
+        </button>
+        <h2 class="h5 mb-0">Finish your post</h2>
+        <span></span>
+      </div>
+      <div class="post-share-layout">
+        <div class="post-share-preview">
+          <img id="share-image" alt="Post photo preview" />
+        </div>
+        <div class="post-share-fields">
+          <label class="form-label fw-semibold" for="caption-input"
+            >Write a caption</label
+          >
+          <textarea
+            class="form-control"
+            id="caption-input"
+            name="caption"
+            rows="6"
+            maxlength="2200"
+            placeholder="Add a caption..."
+          ></textarea>
+          <div class="d-flex justify-content-between mt-1">
+            <span class="small text-secondary" id="share-song-label"
+              >No song selected</span
+            >
+            <span class="small text-secondary"
+              ><span id="caption-count">0</span> / 2200</span
+            >
+          </div>
+        </div>
+      </div>
+      <div class="post-share-footer">
+        <button class="btn btn-primary post-next-button" type="submit">
+          Share post<i class="bi bi-arrow-up-right ms-2" aria-hidden="true"></i>
+        </button>
+      </div>
+    </section>
+  </form>
+</section>
+
+<dialog
+  class="song-picker-dialog"
+  id="song-dialog"
+  aria-labelledby="song-dialog-title"
+>
+  <div class="song-dialog-heading">
+    <div>
+      <p class="post-eyebrow mb-1">Audio library</p>
+      <h2 class="h5 mb-0" id="song-dialog-title">Choose a song</h2>
+    </div>
+    <button
+      class="post-icon-button"
+      id="song-dialog-close"
+      type="button"
+      aria-label="Close song picker"
+    >
+      <i class="bi bi-x-lg" aria-hidden="true"></i>
+    </button>
+  </div>
+  <div class="song-list">
+    <button
+      class="song-option song-option-clear"
+      type="button"
+      data-song-id=""
+      data-song-title="No song selected"
+      data-song-url=""
+    >
+      <span class="post-song-icon"
+        ><i class="bi bi-volume-mute" aria-hidden="true"></i></span
+      ><span><strong>No song</strong><small>Remove selected audio</small></span
+      ><i class="bi bi-check2 ms-auto" aria-hidden="true"></i>
+    </button>
+    {% for song in songs %}
+    <button
+      class="song-option"
+      type="button"
+      data-song-id="{{ song.pk }}"
+      data-song-title="{{ song.title }}{% if song.artist %} - {{ song.artist }}{% endif %}"
+      data-song-url="{{ song.audio_file.url }}"
+    >
+      <span class="post-song-icon"
+        ><i class="bi bi-music-note-beamed" aria-hidden="true"></i></span
+      ><span
+        ><strong>{{ song.title }}</strong
+        ><small>{{ song.artist|default:"Audio track" }}</small></span
+      ><i class="bi bi-play-circle ms-auto" aria-hidden="true"></i>
+    </button>
+    {% empty %}
+    <p class="song-empty-note">No songs have been added yet.</p>
+    {% endfor %}
+  </div>
+</dialog>
+{% endblock %} {% block extra_scripts %}
+<script>
+  (() => {
+    const form = document.getElementById("post-form");
+    const input = document.getElementById("photo-input");
+    const selectionStep = document.getElementById("selection-step");
+    const editorStep = document.getElementById("editor-step");
+    const shareStep = document.getElementById("share-step");
+    const selectionImage = document.getElementById("selection-image");
+    const editorImage = document.getElementById("editor-image");
+    const shareImage = document.getElementById("share-image");
+    const photoCount = document.getElementById("photo-count");
+    const editorPhotoCount = document.getElementById("editor-photo-count");
+    const selectionNext = document.getElementById("selection-next");
+    const toolPanel = document.getElementById("tool-panel");
+    const songDialog = document.getElementById("song-dialog");
+    const songId = document.getElementById("song-id");
+    const songTitle = document.getElementById("selected-song-title");
+    const songAudio = document.getElementById("song-audio");
+    let selectedFiles = [];
+    let activePhoto = 0;
+    let photoUrls = [];
+    let activePane = "";
+    let activeFilter = "none";
+    let rotation = 0;
+
+    const files = () => selectedFiles;
+    const showStep = (step) => {
+      selectionStep.hidden = step !== "selection";
+      editorStep.hidden = step !== "editor";
+      shareStep.hidden = step !== "share";
+      if (step === "editor") renderPhotos();
+      if (step === "share")
+        shareImage.src = photoUrls[activePhoto] || photoUrls[0] || "";
+    };
+    const makeStrip = (container) => {
+      container.replaceChildren();
+      files().forEach((file, index) => {
+        const item = document.createElement("div");
+        item.className = `post-photo-thumb${index === activePhoto ? " is-active" : ""}`;
+        const select = document.createElement("button");
+        select.type = "button";
+        select.className = "post-photo-thumb-select";
+        select.setAttribute("aria-label", `Show photo ${index + 1}`);
+        const image = document.createElement("img");
+        image.src = photoUrls[index];
+        image.alt = `Selected photo ${index + 1}`;
+        select.append(image);
+        select.addEventListener("click", () => {
+          activePhoto = index;
+          renderPhotos();
+        });
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "post-photo-remove";
+        remove.setAttribute("aria-label", `Remove photo ${index + 1}`);
+        remove.innerHTML = '<i class="bi bi-x" aria-hidden="true"></i>';
+        remove.addEventListener("click", () => removePhoto(index));
+        item.append(select, remove);
+        container.append(item);
+      });
+      if (files().length < 10) {
+        const add = document.createElement("button");
+        add.type = "button";
+        add.className = "post-photo-add";
+        add.setAttribute("aria-label", "Add more photos");
+        add.innerHTML = '<i class="bi bi-plus-lg" aria-hidden="true"></i>';
+        add.addEventListener("click", openPhotoPicker);
+        container.append(add);
+      }
+    };
+    const renderPhotos = () => {
+      const selected = files();
+      photoUrls.forEach((url) => URL.revokeObjectURL(url));
+      photoUrls = selected.map((file) => URL.createObjectURL(file));
+      if (activePhoto >= selected.length)
+        activePhoto = Math.max(0, selected.length - 1);
+      const hasPhotos = selected.length > 0;
+      document.getElementById("upload-empty").hidden = hasPhotos;
+      document.getElementById("selection-preview").hidden = !hasPhotos;
+      if (hasPhotos) {
+        selectionImage.src = photoUrls[0];
+        editorImage.src = photoUrls[activePhoto];
+        shareImage.src = photoUrls[activePhoto];
+      }
+      photoCount.textContent = `${selected.length} / 10`;
+      editorPhotoCount.textContent = `${hasPhotos ? activePhoto + 1 : 0} / ${selected.length}`;
+      selectionNext.disabled = !hasPhotos;
+      makeStrip(document.getElementById("photo-strip"));
+      makeStrip(document.getElementById("editor-photo-strip"));
+      applyImageAdjustments();
+    };
+    const updateFileList = (selected) => {
+      const transfer = new DataTransfer();
+      selectedFiles = selected;
+      selected.forEach((file) => transfer.items.add(file));
+      input.files = transfer.files;
+      renderPhotos();
+    };
+    const removePhoto = (index) =>
+      updateFileList(files().filter((file, fileIndex) => fileIndex !== index));
+    const openPhotoPicker = (camera = false) => {
+      input.multiple = !camera;
+      if (camera) input.setAttribute("capture", "environment");
+      else input.removeAttribute("capture");
+      input.value = "";
+      input.click();
+    };
+    const applyImageAdjustments = () => {
+      const brightness = document.getElementById("brightness-input").value;
+      const contrast = document.getElementById("contrast-input").value;
+      const filterMap = {
+        none: "",
+        mono: "grayscale(1)",
+        warm: "sepia(.28) saturate(1.25)",
+        fade: "saturate(.72) contrast(.88)",
+      };
+      editorImage.style.filter =
+        `${filterMap[activeFilter]} brightness(${brightness}%) contrast(${contrast}%)`.trim();
+      editorImage.style.transform = `rotate(${rotation}deg)`;
+    };
+
+    document
+      .getElementById("camera-button")
+      .addEventListener("click", () => openPhotoPicker(true));
+    document
+      .getElementById("select-photos-button")
+      .addEventListener("click", () => openPhotoPicker());
+    document
+      .getElementById("add-photos-button")
+      .addEventListener("click", () => openPhotoPicker());
+    input.addEventListener("change", () => {
+      const incoming = Array.from(input.files || []);
+      const combined = [...selectedFiles, ...incoming];
+      if (combined.length > 10) {
+        window.alert("You can add up to 10 photos.");
+        updateFileList(combined.slice(0, 10));
+      } else {
+        updateFileList(combined);
+      }
+      input.multiple = true;
+      input.removeAttribute("capture");
+    });
+    input.addEventListener("cancel", () => {
+      updateFileList(selectedFiles);
+      input.multiple = true;
+      input.removeAttribute("capture");
+    });
+    selectionNext.addEventListener("click", () => {
+      if (files().length) showStep("editor");
+    });
+    document
+      .getElementById("editor-back")
+      .addEventListener("click", () => showStep("selection"));
+    document
+      .getElementById("editor-next")
+      .addEventListener("click", () => showStep("share"));
+    document
+      .getElementById("share-back")
+      .addEventListener("click", () => showStep("editor"));
+
+    const setSong = (button) => {
+      songId.value = button.dataset.songId;
+      songTitle.textContent = button.dataset.songTitle;
+      document.getElementById("share-song-label").textContent =
+        button.dataset.songTitle;
+      if (button.dataset.songUrl) {
+        songAudio.src = button.dataset.songUrl;
+        songAudio.hidden = false;
+      } else {
+        songAudio.pause();
+        songAudio.removeAttribute("src");
+        songAudio.hidden = true;
+      }
+      songDialog.close();
+    };
+    document
+      .getElementById("song-picker-button")
+      .addEventListener("click", () => songDialog.showModal());
+    document
+      .querySelectorAll("[data-tool='audio']")
+      .forEach((button) =>
+        button.addEventListener("click", () => songDialog.showModal()),
+      );
+    document
+      .querySelectorAll(".song-option")
+      .forEach((button) =>
+        button.addEventListener("click", () => setSong(button)),
+      );
+    document
+      .getElementById("song-dialog-close")
+      .addEventListener("click", () => songDialog.close());
+    songDialog.addEventListener("click", (event) => {
+      if (event.target === songDialog) songDialog.close();
+    });
+
+    document.querySelectorAll("[data-tool]").forEach((button) => {
+      if (button.dataset.tool === "audio") return;
+      button.addEventListener("click", () => {
+        const requestedPane = button.dataset.tool;
+        activePane = activePane === requestedPane ? "" : requestedPane;
+        toolPanel.hidden = !activePane;
+        document.querySelectorAll("[data-pane]").forEach((pane) => {
+          pane.hidden = pane.dataset.pane !== activePane;
+        });
+        document
+          .querySelectorAll("[data-tool]")
+          .forEach((tool) =>
+            tool.classList.toggle(
+              "is-active",
+              tool.dataset.tool === activePane,
+            ),
+          );
+      });
+    });
+    document
+      .getElementById("overlay-text-input")
+      .addEventListener("input", (event) => {
+        const overlay = document.getElementById("text-overlay");
+        overlay.textContent = event.target.value;
+        overlay.hidden = !event.target.value;
+      });
+    document
+      .getElementById("location-toggle")
+      .addEventListener("click", (event) => {
+        const button = event.currentTarget;
+        const input = document.getElementById("location-input");
+        const overlay = document.getElementById("image-overlay");
+        const visible = button.getAttribute("aria-pressed") !== "true";
+        button.setAttribute("aria-pressed", String(visible));
+        button.textContent = visible ? "Hide" : "Show";
+        overlay.textContent = input.value;
+        overlay.hidden = !visible || !input.value.trim();
+      });
+    document
+      .getElementById("location-input")
+      .addEventListener("input", (event) => {
+        const overlay = document.getElementById("image-overlay");
+        overlay.textContent = event.target.value;
+        overlay.hidden =
+          document
+            .getElementById("location-toggle")
+            .getAttribute("aria-pressed") !== "true" ||
+          !event.target.value.trim();
+      });
+    document.getElementById("clear-overlay").addEventListener("click", () => {
+      document.getElementById("location-input").value = "";
+      document
+        .getElementById("location-toggle")
+        .setAttribute("aria-pressed", "false");
+      document.getElementById("location-toggle").textContent = "Show";
+      document.getElementById("image-overlay").hidden = true;
+    });
+    document.querySelectorAll("[data-filter]").forEach((button) =>
+      button.addEventListener("click", () => {
+        activeFilter = button.dataset.filter;
+        document
+          .querySelectorAll("[data-filter]")
+          .forEach((choice) =>
+            choice.classList.toggle("is-selected", choice === button),
+          );
+        applyImageAdjustments();
+      }),
+    );
+    document.querySelectorAll("[data-ratio]").forEach((button) =>
+      button.addEventListener("click", () => {
+        const ratio = button.dataset.ratio;
+        document.getElementById("post-preview-frame").style.aspectRatio =
+          ratio.replace(":", " / ");
+        document
+          .querySelectorAll("[data-ratio]")
+          .forEach((choice) =>
+            choice.classList.toggle("is-selected", choice === button),
+          );
+      }),
+    );
+    ["brightness-input", "contrast-input"].forEach((id) =>
+      document
+        .getElementById(id)
+        .addEventListener("input", applyImageAdjustments),
+    );
+    document.getElementById("rotate-button").addEventListener("click", () => {
+      rotation = (rotation + 90) % 360;
+      applyImageAdjustments();
+    });
+    document
+      .getElementById("caption-input")
+      .addEventListener("input", (event) => {
+        document.getElementById("caption-count").textContent =
+          event.target.value.length;
+      });
+    form.addEventListener("submit", (event) => {
+      if (!files().length) {
+        event.preventDefault();
+        showStep("selection");
+        document
+          .getElementById("upload-empty")
+          .scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    });
+  })();
+</script>
+{% endblock %}

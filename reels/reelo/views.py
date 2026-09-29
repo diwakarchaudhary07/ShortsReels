@@ -3,10 +3,11 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django import forms
+from django.core.exceptions import ValidationError
 from django.forms import ModelForm
 from django.shortcuts import get_object_or_404, redirect, render
 
-from .models import Profile, Reel
+from .models import Post, PostImage, Profile, Reel, Song
 
 
 class ProfileForm(ModelForm):
@@ -78,6 +79,50 @@ def create_reel(request):
 	else:
 		form = ReelForm()
 	return render(request, "create_reel.html", {"form": form})
+
+
+@login_required
+def create_post(request):
+	songs = Song.objects.all()
+	errors = []
+	if request.method == "POST":
+		images = request.FILES.getlist("images")
+		cleaned_images = []
+		if not images:
+			errors.append("Select at least one photo before sharing.")
+		elif len(images) > 10:
+			errors.append("You can add up to 10 photos to a post.")
+		else:
+			for image in images:
+				try:
+					cleaned_images.append(forms.ImageField().clean(image))
+				except ValidationError:
+					errors.append(f"{image.name} is not a valid image.")
+
+		song = None
+		song_id = request.POST.get("song_id", "").strip()
+		if song_id:
+			try:
+				song = Song.objects.filter(pk=int(song_id)).first()
+			except ValueError:
+				pass
+
+		if not errors:
+			post = Post.objects.create(
+				user=request.user,
+				caption=request.POST.get("caption", "").strip()[:2200],
+				song=song,
+			)
+			for position, image in enumerate(cleaned_images):
+				PostImage.objects.create(post=post, image=image, position=position)
+			messages.success(request, "Your post has been shared.")
+			return redirect("profile")
+
+	return render(
+		request,
+		"create_post.html",
+		{"songs": songs, "errors": errors, "start_share": bool(errors)},
+	)
 
 
 def reels_feed(request):
