@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Create a story | Reelo{% endblock %}
+{% block content %}
+<section class="mx-auto py-3" style="max-width: 680px">
+  <h1 class="h3 mb-3">Create a story</h1>
+  {% if form.non_field_errors %}
+  <div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>
+  {% endif %}
+  <form class="bg-white border rounded-3 p-3 p-md-4" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.image.errors }}
+    <div class="mb-3">
+      <label class="form-label fw-semibold" for="{{ form.image.id_for_label }}">Photo</label>
+      {{ form.image }}
+      <button class="btn btn-outline-dark btn-sm mt-2" type="button" data-camera-open data-camera-modes="photo,video" data-camera-photo-target="#{{ form.image.id_for_label }}" data-camera-video-target="#{{ form.video.id_for_label }}">
+        <i class="bi bi-camera me-1" aria-hidden="true"></i>Open camera
+      </button>
+    </div>
+    {{ form.video.errors }}
+    <div class="mb-3">
+      <label class="form-label fw-semibold" for="{{ form.video.id_for_label }}">Or video</label>
+      {{ form.video }}
+    </div>
+    <div class="mb-3">
+      <label class="form-label fw-semibold" for="{{ form.caption.id_for_label }}">Caption</label>
+      {{ form.caption }}
+    </div>
+    <input type="hidden" id="story-song-id" name="song_id" />
+    <div class="mb-3">
+      <p class="small text-secondary mb-2" data-music-selected-label>No music selected</p>
+      <button class="btn btn-outline-dark" type="button" data-music-picker-open data-music-target="#story-song-id">
+        <i class="bi bi-music-note-beamed me-1" aria-hidden="true"></i>Add Music
+      </button>
+    </div>
+    <p class="small text-secondary">Stories expire automatically after 24 hours.</p>
+    <div class="d-flex justify-content-end gap-2">
+      <a class="btn btn-outline-secondary" href="{% url 'stories' %}">Cancel</a>
+      <button class="btn btn-primary" type="submit">Share story</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

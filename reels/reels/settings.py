@@ -11,9 +11,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
 from pathlib import Path 
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
@@ -127,7 +129,12 @@ STATICFILES_DIRS = [BASE_DIR / "static", BASE_DIR / "assets"]
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+APPLE_MUSIC_TEAM_ID = os.getenv("APPLE_MUSIC_TEAM_ID", "")
+APPLE_MUSIC_KEY_ID = os.getenv("APPLE_MUSIC_KEY_ID", "")
+APPLE_MUSIC_PRIVATE_KEY_PATH = os.getenv("APPLE_MUSIC_PRIVATE_KEY_PATH", "")
+APPLE_MUSIC_PRIVATE_KEY = os.getenv("APPLE_MUSIC_PRIVATE_KEY", "")
+APPLE_MUSIC_STOREFRONT = os.getenv("APPLE_MUSIC_STOREFRONT", "in")
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
-

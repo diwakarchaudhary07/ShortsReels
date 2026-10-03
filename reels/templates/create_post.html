@@ -29,6 +29,13 @@
       accept="image/*"
       multiple
     />
+    <input
+      id="video-input"
+      class="visually-hidden"
+      type="file"
+      name="video"
+      accept="video/*"
+    />
     <input id="song-id" type="hidden" name="song_id" value="" />
 
     <section class="post-step" id="selection-step" aria-label="Select photos">
@@ -50,7 +57,15 @@
           Choose an image from your device or take one now.
         </p>
         <div class="d-flex flex-wrap justify-content-center gap-2">
-          <button class="btn btn-outline-dark" id="camera-button" type="button">
+          <button
+            class="btn btn-outline-dark"
+            id="camera-button"
+            type="button"
+            data-camera-open
+            data-camera-modes="photo,video"
+            data-camera-photo-target="#photo-input"
+            data-camera-video-target="#video-input"
+          >
             <i class="bi bi-camera me-1" aria-hidden="true"></i>Camera
           </button>
           <button
@@ -60,11 +75,26 @@
           >
             <i class="bi bi-image me-1" aria-hidden="true"></i>Select photos
           </button>
+          <button class="btn btn-outline-dark" id="select-video-button" type="button">
+            <i class="bi bi-camera-video me-1" aria-hidden="true"></i>Select video
+          </button>
         </div>
       </div>
       <div class="post-selection-preview" id="selection-preview" hidden>
         <img id="selection-image" alt="Selected photo preview" />
+        <video id="selection-video" controls playsinline hidden></video>
         <div class="post-selection-actions">
+          <button
+            class="btn btn-outline-dark"
+            id="camera-again-button"
+            type="button"
+            data-camera-open
+            data-camera-modes="photo,video"
+            data-camera-photo-target="#photo-input"
+            data-camera-video-target="#video-input"
+          >
+            <i class="bi bi-camera me-1" aria-hidden="true"></i>Camera
+          </button>
           <button
             class="btn btn-outline-dark"
             id="add-photos-button"
@@ -104,20 +134,20 @@
         ></span>
         <div class="post-song-copy">
           <span class="small text-secondary">Selected song</span>
-          <strong id="selected-song-title">No song selected</strong>
+          <strong id="selected-song-title" data-music-selected-label>No music selected</strong>
         </div>
         <button
           class="post-icon-button"
           id="song-picker-button"
           type="button"
+          data-music-picker-open
+          data-music-target="#song-id"
           aria-label="Select or change song"
           title="Select or change song"
         >
           <i class="bi bi-plus-lg" aria-hidden="true"></i>
         </button>
       </div>
-      <audio class="post-audio-preview" id="song-audio" controls hidden></audio>
-
       <div class="post-editor-main">
         <div
           class="post-preview-frame"
@@ -339,6 +369,7 @@
       <div class="post-share-layout">
         <div class="post-share-preview">
           <img id="share-image" alt="Post photo preview" />
+          <video id="share-video" controls playsinline hidden></video>
         </div>
         <div class="post-share-fields">
           <label class="form-label fw-semibold" for="caption-input"
@@ -353,13 +384,21 @@
             placeholder="Add a caption..."
           ></textarea>
           <div class="d-flex justify-content-between mt-1">
-            <span class="small text-secondary" id="share-song-label"
-              >No song selected</span
+            <span class="small text-secondary" id="share-song-label" data-music-selected-label
+              >No music selected</span
             >
             <span class="small text-secondary"
               ><span id="caption-count">0</span> / 2200</span
             >
           </div>
+          <label class="form-label fw-semibold mt-3" for="location-input-post">Location</label>
+          <input class="form-control" id="location-input-post" name="location" maxlength="255" placeholder="Add a location" />
+          <label class="form-label fw-semibold mt-3" for="visibility-input">Who can see this post?</label>
+          <select class="form-select" id="visibility-input" name="visibility">
+            <option value="public">Public</option>
+            <option value="followers">Followers</option>
+            <option value="private">Only me</option>
+          </select>
         </div>
       </div>
       <div class="post-share-footer">
@@ -371,80 +410,28 @@
   </form>
 </section>
 
-<dialog
-  class="song-picker-dialog"
-  id="song-dialog"
-  aria-labelledby="song-dialog-title"
->
-  <div class="song-dialog-heading">
-    <div>
-      <p class="post-eyebrow mb-1">Audio library</p>
-      <h2 class="h5 mb-0" id="song-dialog-title">Choose a song</h2>
-    </div>
-    <button
-      class="post-icon-button"
-      id="song-dialog-close"
-      type="button"
-      aria-label="Close song picker"
-    >
-      <i class="bi bi-x-lg" aria-hidden="true"></i>
-    </button>
-  </div>
-  <div class="song-list">
-    <button
-      class="song-option song-option-clear"
-      type="button"
-      data-song-id=""
-      data-song-title="No song selected"
-      data-song-url=""
-    >
-      <span class="post-song-icon"
-        ><i class="bi bi-volume-mute" aria-hidden="true"></i></span
-      ><span><strong>No song</strong><small>Remove selected audio</small></span
-      ><i class="bi bi-check2 ms-auto" aria-hidden="true"></i>
-    </button>
-    {% for song in songs %}
-    <button
-      class="song-option"
-      type="button"
-      data-song-id="{{ song.pk }}"
-      data-song-title="{{ song.title }}{% if song.artist %} - {{ song.artist }}{% endif %}"
-      data-song-url="{{ song.audio_file.url }}"
-    >
-      <span class="post-song-icon"
-        ><i class="bi bi-music-note-beamed" aria-hidden="true"></i></span
-      ><span
-        ><strong>{{ song.title }}</strong
-        ><small>{{ song.artist|default:"Audio track" }}</small></span
-      ><i class="bi bi-play-circle ms-auto" aria-hidden="true"></i>
-    </button>
-    {% empty %}
-    <p class="song-empty-note">No songs have been added yet.</p>
-    {% endfor %}
-  </div>
-</dialog>
 {% endblock %} {% block extra_scripts %}
 <script>
   (() => {
     const form = document.getElementById("post-form");
     const input = document.getElementById("photo-input");
+    const videoInput = document.getElementById("video-input");
     const selectionStep = document.getElementById("selection-step");
     const editorStep = document.getElementById("editor-step");
     const shareStep = document.getElementById("share-step");
     const selectionImage = document.getElementById("selection-image");
+    const selectionVideo = document.getElementById("selection-video");
     const editorImage = document.getElementById("editor-image");
     const shareImage = document.getElementById("share-image");
+    const shareVideo = document.getElementById("share-video");
     const photoCount = document.getElementById("photo-count");
     const editorPhotoCount = document.getElementById("editor-photo-count");
     const selectionNext = document.getElementById("selection-next");
     const toolPanel = document.getElementById("tool-panel");
-    const songDialog = document.getElementById("song-dialog");
-    const songId = document.getElementById("song-id");
-    const songTitle = document.getElementById("selected-song-title");
-    const songAudio = document.getElementById("song-audio");
     let selectedFiles = [];
     let activePhoto = 0;
     let photoUrls = [];
+    let videoUrl = "";
     let activePane = "";
     let activeFilter = "none";
     let rotation = 0;
@@ -455,8 +442,16 @@
       editorStep.hidden = step !== "editor";
       shareStep.hidden = step !== "share";
       if (step === "editor") renderPhotos();
-      if (step === "share")
+      if (step === "share") {
+        const hasVideo = Boolean(videoInput.files.length);
+        shareImage.hidden = hasVideo;
+        shareVideo.hidden = !hasVideo;
+        if (hasVideo) {
+          shareVideo.src = videoUrl;
+        } else {
         shareImage.src = photoUrls[activePhoto] || photoUrls[0] || "";
+        }
+      }
     };
     const makeStrip = (container) => {
       container.replaceChildren();
@@ -501,16 +496,20 @@
       if (activePhoto >= selected.length)
         activePhoto = Math.max(0, selected.length - 1);
       const hasPhotos = selected.length > 0;
-      document.getElementById("upload-empty").hidden = hasPhotos;
-      document.getElementById("selection-preview").hidden = !hasPhotos;
+      const hasVideo = Boolean(videoInput.files.length);
+      document.getElementById("upload-empty").hidden = hasPhotos || hasVideo;
+      document.getElementById("selection-preview").hidden = !hasPhotos && !hasVideo;
+      selectionImage.hidden = !hasPhotos;
+      selectionVideo.hidden = !hasVideo;
       if (hasPhotos) {
         selectionImage.src = photoUrls[0];
         editorImage.src = photoUrls[activePhoto];
         shareImage.src = photoUrls[activePhoto];
       }
-      photoCount.textContent = `${selected.length} / 10`;
+      if (hasVideo) selectionVideo.src = videoUrl;
+      photoCount.textContent = hasVideo ? "Video selected" : `${selected.length} / 10`;
       editorPhotoCount.textContent = `${hasPhotos ? activePhoto + 1 : 0} / ${selected.length}`;
-      selectionNext.disabled = !hasPhotos;
+      selectionNext.disabled = !hasPhotos && !hasVideo;
       makeStrip(document.getElementById("photo-strip"));
       makeStrip(document.getElementById("editor-photo-strip"));
       applyImageAdjustments();
@@ -546,9 +545,6 @@
     };
 
     document
-      .getElementById("camera-button")
-      .addEventListener("click", () => openPhotoPicker(true));
-    document
       .getElementById("select-photos-button")
       .addEventListener("click", () => openPhotoPicker());
     document
@@ -556,6 +552,11 @@
       .addEventListener("click", () => openPhotoPicker());
     input.addEventListener("change", () => {
       const incoming = Array.from(input.files || []);
+      if (incoming.length) {
+        videoInput.value = "";
+        if (videoUrl) URL.revokeObjectURL(videoUrl);
+        videoUrl = "";
+      }
       const combined = [...selectedFiles, ...incoming];
       if (combined.length > 10) {
         window.alert("You can add up to 10 photos.");
@@ -571,8 +572,21 @@
       input.multiple = true;
       input.removeAttribute("capture");
     });
+    document
+      .getElementById("select-video-button")
+      .addEventListener("click", () => videoInput.click());
+    videoInput.addEventListener("change", () => {
+      const video = videoInput.files[0];
+      if (!video) return;
+      updateFileList([]);
+      if (videoUrl) URL.revokeObjectURL(videoUrl);
+      videoUrl = URL.createObjectURL(video);
+      selectionVideo.src = videoUrl;
+      showStep("selection");
+    });
     selectionNext.addEventListener("click", () => {
-      if (files().length) showStep("editor");
+      if (videoInput.files.length) showStep("share");
+      else if (files().length) showStep("editor");
     });
     document
       .getElementById("editor-back")
@@ -582,41 +596,13 @@
       .addEventListener("click", () => showStep("share"));
     document
       .getElementById("share-back")
-      .addEventListener("click", () => showStep("editor"));
+      .addEventListener("click", () =>
+        showStep(videoInput.files.length ? "selection" : "editor"),
+      );
 
-    const setSong = (button) => {
-      songId.value = button.dataset.songId;
-      songTitle.textContent = button.dataset.songTitle;
-      document.getElementById("share-song-label").textContent =
-        button.dataset.songTitle;
-      if (button.dataset.songUrl) {
-        songAudio.src = button.dataset.songUrl;
-        songAudio.hidden = false;
-      } else {
-        songAudio.pause();
-        songAudio.removeAttribute("src");
-        songAudio.hidden = true;
-      }
-      songDialog.close();
-    };
-    document
-      .getElementById("song-picker-button")
-      .addEventListener("click", () => songDialog.showModal());
-    document
-      .querySelectorAll("[data-tool='audio']")
-      .forEach((button) =>
-        button.addEventListener("click", () => songDialog.showModal()),
-      );
-    document
-      .querySelectorAll(".song-option")
-      .forEach((button) =>
-        button.addEventListener("click", () => setSong(button)),
-      );
-    document
-      .getElementById("song-dialog-close")
-      .addEventListener("click", () => songDialog.close());
-    songDialog.addEventListener("click", (event) => {
-      if (event.target === songDialog) songDialog.close();
+    document.querySelectorAll("[data-tool='audio']").forEach((button) => {
+      button.dataset.musicPickerOpen = "";
+      button.dataset.musicTarget = "#song-id";
     });
 
     document.querySelectorAll("[data-tool]").forEach((button) => {

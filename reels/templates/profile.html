@@ -106,6 +106,51 @@
     color: var(--profile-muted);
     font-size: 0.85rem;
   }
+  .profile-content-grid {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+    background: #fff;
+  }
+  .profile-tile-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+  .profile-content-tile {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    aspect-ratio: 1;
+    background: #17191d;
+  }
+  .profile-content-tile img,
+  .profile-content-tile video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .profile-content-indicator {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    place-items: center;
+    border-radius: 50%;
+    background: rgb(23 25 29 / 74%);
+    color: #fff;
+  }
+  .profile-tile-placeholder {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    place-items: center;
+    color: var(--profile-orange);
+    font-size: 2rem;
+  }
   @media (max-width: 575.98px) {
     .profile-heading,
     .profile-content {
@@ -122,6 +167,12 @@
     }
     .profile-stats {
       gap: 1.1rem;
+    }
+    .profile-content-grid {
+      padding: 1rem;
+    }
+    .profile-tile-grid {
+      gap: 0.25rem;
     }
   }
 </style>
@@ -147,10 +198,7 @@
       </div>
       {% endif %}
       <div class="min-w-0">
-        <h1 class="h3 mb-1">
-          {{ displayed_user.full_name|default:displayed_user.username }}
-        </h1>
-        <div class="profile-handle">@{{ displayed_user.username }}</div>
+        <h1 class="h3 mb-1">{{ displayed_user.username }}</h1>
         {% if can_view_profile and profile %}
         <div class="profile-stats" aria-label="Profile activity">
           <div class="profile-stat">
@@ -171,7 +219,7 @@
         The profile details are only visible to the account owner.
       </p>
     </div>
-    {% elif is_owner %}
+    {% elif editing %}
     <div class="profile-content">
       <h2 class="profile-section-title">Edit profile</h2>
       <form
@@ -184,6 +232,18 @@
         <div class="alert alert-danger">{{ form.non_field_errors }}</div>
         {% endif %}
         <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label" for="{{ form.full_name.id_for_label }}"
+              >Name</label
+            >
+            {{ form.full_name }} {{ form.full_name.errors }}
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="{{ form.username.id_for_label }}"
+              >Username</label
+            >
+            {{ form.username }} {{ form.username.errors }}
+          </div>
           <div class="col-12">
             <label
               class="form-label"
@@ -231,9 +291,12 @@
             </div>
           </div>
         </div>
-        <div class="d-flex justify-content-end mt-4">
+        <div class="d-flex justify-content-end gap-2 mt-4">
+          <a class="btn btn-outline-secondary px-4" href="{% url 'profile' %}"
+            >Cancel</a
+          >
           <button class="btn profile-save px-4" type="submit">
-            Save profile
+            Save Changes
           </button>
         </div>
       </form>
@@ -264,9 +327,75 @@
       </div>
       {% if not profile.bio and not profile.location and not profile.website %}
       <p class="text-body-secondary mb-0">No profile details yet.</p>
+      {% endif %} {% if is_owner %}
+      <div class="d-flex justify-content-end mt-4">
+        <a class="btn profile-save px-4" href="{% url 'edit_profile' %}"
+          >Edit Profile</a
+        >
+      </div>
       {% endif %}
     </div>
     {% endif %}
   </div>
+  {% if can_view_profile and not editing %}
+  <section class="profile-content-grid" aria-labelledby="profile-content-title">
+    <h2 id="profile-content-title" class="profile-section-title">
+      Posts and Reels
+    </h2>
+    {% if content_items %}
+    <div class="profile-tile-grid">
+      {% for item in content_items %} {% if item.post %}
+      <a
+        class="profile-content-tile"
+        href="{% url 'post_detail' post_id=item.post.pk %}"
+        aria-label="View post: {{ item.post.caption|default:'Photo post' }}"
+      >
+        {% if item.preview_url %}
+        <img
+          src="{{ item.preview_url }}"
+          alt="{{ item.post.caption }}"
+          loading="lazy"
+        />
+        {% else %}
+        <span class="profile-tile-placeholder" aria-hidden="true">
+          <i class="bi bi-image"></i>
+        </span>
+        {% endif %} {% if item.images|length > 1 %}
+        <span class="profile-content-indicator" aria-label="Multiple photos">
+          <i class="bi bi-images" aria-hidden="true"></i>
+        </span>
+        {% endif %}
+      </a>
+      {% else %}
+      <a
+        class="profile-content-tile"
+        href="{% url 'reel_detail' reel_id=item.reel.pk %}"
+        aria-label="View reel: {{ item.reel.caption|default:'Video reel' }}"
+      >
+        {% if item.preview_url %}
+        <img
+          src="{{ item.preview_url }}"
+          alt="{{ item.reel.caption }}"
+          loading="lazy"
+        />
+        {% else %}
+        <video
+          src="{{ item.reel.video_file.url }}"
+          muted
+          playsinline
+          preload="metadata"
+        ></video>
+        {% endif %}
+        <span class="profile-content-indicator" aria-label="Reel">
+          <i class="bi bi-play-fill" aria-hidden="true"></i>
+        </span>
+      </a>
+      {% endif %} {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-body-secondary mb-0">No posts or reels yet</p>
+    {% endif %}
+  </section>
+  {% endif %}
 </section>
 {% endwith %} {% endblock %}

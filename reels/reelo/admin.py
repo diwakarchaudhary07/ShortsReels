@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import Post, PostImage, Profile, Reel, Song, User
+from .models import Follow, Post, PostImage, Profile, Reel, Song, Story, User
 
 
 class ProfileInline(admin.StackedInline):
@@ -29,10 +29,29 @@ class ProfileAdmin(admin.ModelAdmin):
 	search_fields = ("user__username", "user__full_name", "bio", "location")
 
 
+@admin.register(Follow)
+class FollowAdmin(admin.ModelAdmin):
+	list_display = ("follower", "following", "created_at")
+	search_fields = ("follower__username", "following__username")
+	readonly_fields = ("created_at",)
+
+
 @admin.register(Reel)
 class ReelAdmin(admin.ModelAdmin):
-	list_display = ("user", "caption", "created_at")
-	search_fields = ("user__username", "caption")
+	list_display = (
+		"user",
+		"caption",
+		"song",
+		"location",
+		"views_count",
+		"likes_count",
+		"is_archived",
+		"created_at",
+	)
+	list_filter = ("is_archived", "is_comments_enabled", "created_at")
+	search_fields = ("user__username", "caption", "location", "song__title")
+	list_editable = ("is_archived",)
+	readonly_fields = ("created_at", "updated_at")
 
 
 class PostImageInline(admin.TabularInline):
@@ -42,15 +61,33 @@ class PostImageInline(admin.TabularInline):
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-	list_display = ("user", "song", "created_at")
-	search_fields = ("user__username", "caption", "song__title")
+	list_display = ("user", "visibility", "location", "song", "created_at")
+	list_filter = ("visibility", "created_at")
+	search_fields = ("user__username", "caption", "location", "song__title")
 	inlines = (PostImageInline,)
 
 
 @admin.register(Song)
 class SongAdmin(admin.ModelAdmin):
-	list_display = ("title", "artist", "created_at")
-	search_fields = ("title", "artist")
+	list_display = (
+		"title",
+		"artist",
+		"provider",
+		"is_trending",
+		"rights_cleared",
+		"created_at",
+	)
+	list_filter = ("provider", "is_trending", "rights_cleared")
+	search_fields = ("title", "artist", "external_id")
+	readonly_fields = ("created_at",)
+
+
+@admin.register(Story)
+class StoryAdmin(admin.ModelAdmin):
+	list_display = ("user", "song", "created_at", "expires_at")
+	list_filter = ("created_at", "expires_at")
+	search_fields = ("user__username", "caption", "song__title")
+	readonly_fields = ("created_at",)
 
 admin.site.site_header = "ShortsReels administration"
 admin.site.site_title = "ShortsReels admin"

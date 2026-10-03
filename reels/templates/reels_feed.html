@@ -10,6 +10,13 @@
       <video
         class="reel-video"
         src="{{ reel.video_file.url }}"
+        {%
+        if
+        reel.thumbnail_url
+        %}poster="{{ reel.thumbnail_url }}"
+        {%
+        endif
+        %}
         controls
         autoplay
         muted
@@ -25,44 +32,74 @@
         >
         {% if reel.caption %}
         <p>{{ reel.caption|linebreaksbr }}</p>
+        {% endif %} {% if reel.location or reel.song %}
+        <div class="reel-caption-meta">
+          {% if reel.location %}
+          <span>
+            <i class="bi bi-geo-alt" aria-hidden="true"></i>
+            {{ reel.location }}
+          </span>
+          {% endif %} {% if reel.song %}
+          <span>
+            <i class="bi bi-music-note" aria-hidden="true"></i>
+            {% if reel.song.attribution_url %}
+            <a href="{{ reel.song.attribution_url }}" target="_blank" rel="noopener noreferrer">{{ reel.song }} · {{ reel.song.attribution }}</a>
+            {% else %}{{ reel.song }}{% endif %}
+          </span>
+          {% endif %}
+        </div>
         {% endif %}
       </div>
     </div>
     <div class="reel-actions" aria-label="Reel actions">
-      <button
-        class="reel-action"
-        type="button"
-        aria-label="Like reel"
-        aria-pressed="false"
-        data-toggle-action
-      >
-        <i class="bi bi-heart" aria-hidden="true"></i>
-      </button>
-      <button
-        class="reel-action"
-        type="button"
-        aria-label="Comment on reel"
-        title="Comments"
-      >
-        <i class="bi bi-chat" aria-hidden="true"></i>
-      </button>
-      <button
-        class="reel-action"
-        type="button"
-        aria-label="Share reel"
-        data-share-url="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}"
-      >
-        <i class="bi bi-send" aria-hidden="true"></i>
-      </button>
-      <button
-        class="reel-action"
-        type="button"
-        aria-label="Save reel"
-        aria-pressed="false"
-        data-toggle-action
-      >
-        <i class="bi bi-bookmark" aria-hidden="true"></i>
-      </button>
+      <div class="reel-action-group">
+        <button
+          class="reel-action"
+          type="button"
+          aria-label="Like reel"
+          aria-pressed="false"
+          data-toggle-action
+        >
+          <i class="bi bi-heart" aria-hidden="true"></i>
+        </button>
+        <span class="reel-action-count">{{ reel.likes_count }}</span>
+      </div>
+      {% if reel.is_comments_enabled %}
+      <div class="reel-action-group">
+        <button
+          class="reel-action"
+          type="button"
+          aria-label="Comment on reel"
+          title="Comments"
+        >
+          <i class="bi bi-chat" aria-hidden="true"></i>
+        </button>
+        <span class="reel-action-count">{{ reel.comments_count }}</span>
+      </div>
+      {% endif %}
+      <div class="reel-action-group">
+        <button
+          class="reel-action"
+          type="button"
+          aria-label="Share reel"
+          data-share-url="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}"
+        >
+          <i class="bi bi-send" aria-hidden="true"></i>
+        </button>
+        <span class="reel-action-count">{{ reel.shares_count }}</span>
+      </div>
+      <div class="reel-action-group">
+        <button
+          class="reel-action"
+          type="button"
+          aria-label="Save reel"
+          aria-pressed="false"
+          data-toggle-action
+        >
+          <i class="bi bi-bookmark" aria-hidden="true"></i>
+        </button>
+        <span class="reel-action-count">{{ reel.saves_count }}</span>
+      </div>
     </div>
   </article>
   {% endfor %}

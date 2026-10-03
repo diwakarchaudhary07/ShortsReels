@@ -1,0 +1,680 @@
+{% extends "base.html" %} {% block content %}
+<style>
+  .social-profile {
+    width: min(100%, 900px);
+    margin-inline: auto;
+  }
+  .social-profile-topbar {
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) 90px;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--reelo-line);
+    border-radius: 8px;
+    background: #fff;
+  }
+  .social-profile-username {
+    overflow: hidden;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .social-profile-tools {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.25rem;
+  }
+  .social-profile-icon {
+    display: grid;
+    width: 38px;
+    height: 38px;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--reelo-ink);
+    font-size: 1.2rem;
+    text-decoration: none;
+  }
+  .social-profile-icon:hover {
+    background: #fff1df;
+    color: #a8441b;
+  }
+  .social-profile-card {
+    overflow: hidden;
+    border: 1px solid var(--reelo-line);
+    border-radius: 8px;
+    background: #fff;
+  }
+  .social-profile-identity {
+    display: grid;
+    grid-template-columns: 150px minmax(0, 1fr);
+    align-items: center;
+    gap: 1.5rem;
+    padding: 2rem;
+  }
+  .social-profile-avatar {
+    display: grid;
+    width: 132px;
+    height: 132px;
+    place-items: center;
+    overflow: hidden;
+    border: 3px solid var(--reelo-orange);
+    border-radius: 50%;
+    background: #fff4e6;
+    color: var(--reelo-ink);
+    font-size: 2.5rem;
+    font-weight: 750;
+    object-fit: cover;
+  }
+  .social-profile-stats {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    max-width: 420px;
+  }
+  .social-profile-stat {
+    min-width: 60px;
+    text-align: center;
+  }
+  .social-profile-stat strong {
+    display: block;
+    color: var(--reelo-ink);
+    font-size: 1.05rem;
+  }
+  .social-profile-stat span {
+    color: var(--reelo-muted);
+    font-size: 0.85rem;
+  }
+  .social-profile-bio {
+    padding: 0 2rem 1.5rem;
+  }
+  .social-profile-name {
+    margin-bottom: 0.2rem;
+    font-weight: 750;
+  }
+  .social-profile-extra {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1rem;
+    margin-top: 0.65rem;
+    color: var(--reelo-muted);
+    font-size: 0.88rem;
+  }
+  .social-profile-extra a {
+    color: #a8441b;
+    overflow-wrap: anywhere;
+  }
+  .social-profile-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 1rem;
+  }
+  .social-profile-actions > * {
+    flex: 1 1 180px;
+  }
+  .social-profile-highlights {
+    padding: 1.25rem 2rem;
+    border-top: 1px solid var(--reelo-line);
+  }
+  .social-profile-highlight {
+    display: grid;
+    justify-items: center;
+    gap: 0.35rem;
+    width: 80px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--reelo-ink);
+    font-size: 0.78rem;
+  }
+  .social-profile-highlight-icon {
+    display: grid;
+    width: 66px;
+    height: 66px;
+    place-items: center;
+    border: 1px solid #c9c9c9;
+    border-radius: 50%;
+    background: #fff;
+    font-size: 1.35rem;
+  }
+  .social-profile-highlight:hover .social-profile-highlight-icon {
+    border-color: var(--reelo-orange);
+    color: #a8441b;
+  }
+  .social-profile-grid-section {
+    margin-top: 1.25rem;
+    border-top: 1px solid var(--reelo-line);
+  }
+  .social-profile-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-bottom: 1px solid var(--reelo-line);
+  }
+  .social-profile-tab {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.8rem 0.25rem;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--reelo-muted);
+    font-size: 0.82rem;
+    font-weight: 650;
+  }
+  .social-profile-tab[aria-selected="true"] {
+    border-bottom-color: var(--reelo-orange);
+    color: var(--reelo-ink);
+  }
+  .social-profile-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.35rem;
+    padding-top: 0.75rem;
+  }
+  .social-profile-tile {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    aspect-ratio: 1;
+    background: var(--reelo-ink);
+  }
+  .social-profile-tile img,
+  .social-profile-tile video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .social-profile-tile-mark {
+    position: absolute;
+    top: 0.45rem;
+    right: 0.45rem;
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    place-items: center;
+    border-radius: 50%;
+    background: rgb(23 25 29 / 75%);
+    color: #fff;
+  }
+  .social-profile-empty {
+    padding: 2rem 1rem;
+    color: var(--reelo-muted);
+    text-align: center;
+  }
+  .social-profile-share-url {
+    overflow-wrap: anywhere;
+  }
+  @media (max-width: 575.98px) {
+    .social-profile-identity {
+      grid-template-columns: 86px minmax(0, 1fr);
+      gap: 0.75rem;
+      padding: 1rem;
+    }
+    .social-profile-avatar {
+      width: 78px;
+      height: 78px;
+      font-size: 1.8rem;
+    }
+    .social-profile-stats {
+      gap: 0.25rem;
+    }
+    .social-profile-stat {
+      min-width: 0;
+    }
+    .social-profile-stat span {
+      font-size: 0.7rem;
+    }
+    .social-profile-bio {
+      padding: 0 1rem 1rem;
+    }
+    .social-profile-highlights {
+      padding: 1rem;
+    }
+    .social-profile-tabs {
+      margin-inline: -0.25rem;
+    }
+    .social-profile-tab {
+      flex-direction: column;
+      gap: 0.2rem;
+      font-size: 0.68rem;
+    }
+    .social-profile-grid {
+      gap: 0.15rem;
+    }
+  }
+</style>
+
+{% with displayed_user=profile_user|default:user %}
+<section class="social-profile py-2">
+  <header class="social-profile-topbar">
+    {% if is_owner %}
+    <a
+      class="social-profile-icon"
+      href="{% url 'create_post' %}"
+      aria-label="Create post"
+      title="Create post"
+    >
+      <i class="bi bi-plus-lg" aria-hidden="true"></i>
+    </a>
+    {% else %}
+    <span></span>
+    {% endif %}
+    <span class="social-profile-username">{{ displayed_user.username }}</span>
+    <div class="social-profile-tools">
+      <a
+        class="social-profile-icon"
+        href="{% url 'notifications' %}"
+        aria-label="Activity"
+        title="Activity"
+      >
+        <i class="bi bi-heart" aria-hidden="true"></i>
+      </a>
+      <div class="dropdown">
+        <button
+          class="social-profile-icon"
+          type="button"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          aria-label="Profile menu"
+          title="Menu"
+        >
+          <i class="bi bi-three-dots" aria-hidden="true"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          {% if is_owner %}
+          <li>
+            <a class="dropdown-item" href="{% url 'edit_profile' %}"
+              >Edit profile</a
+            >
+          </li>
+          <li>
+            <a class="dropdown-item" href="{% url 'create_reel' %}"
+              >Create reel</a
+            >
+          </li>
+          <li>
+            <a class="dropdown-item" href="{% url 'create_story' %}"
+              >Create story</a
+            >
+          </li>
+          {% endif %}
+          <li>
+            <a class="dropdown-item" href="{% url 'reels_feed' %}">Reels</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </header>
+
+  <div class="social-profile-card">
+    {% if not can_view_profile %}
+    <div class="social-profile-empty">
+      <h1 class="h5">This account is private</h1>
+      <p class="mb-0">
+        The profile details are only visible to this account's followers.
+      </p>
+    </div>
+    {% else %}
+    <div class="social-profile-identity">
+      {% if profile and profile.profile_image %}
+      <img
+        class="social-profile-avatar"
+        src="{{ profile.profile_image.url }}"
+        alt="{{ displayed_user.username }}'s profile photo"
+      />
+      {% elif displayed_user.profile_image %}
+      <img
+        class="social-profile-avatar"
+        src="{{ displayed_user.profile_image.url }}"
+        alt="{{ displayed_user.username }}'s profile photo"
+      />
+      {% else %}
+      <div class="social-profile-avatar" aria-hidden="true">
+        {{ displayed_user.username|first|upper }}
+      </div>
+      {% endif %}
+      <div class="min-w-0">
+        <h1 class="h5 mb-3">{{ displayed_user.username }}</h1>
+        <div class="social-profile-stats" aria-label="Profile statistics">
+          <div class="social-profile-stat">
+            <strong>{{ posts_count }}</strong><span>Posts</span>
+          </div>
+          <div class="social-profile-stat">
+            <strong>{{ followers_count|default:0 }}</strong
+            ><span>Followers</span>
+          </div>
+          <div class="social-profile-stat">
+            <strong>{{ following_count|default:0 }}</strong
+            ><span>Following</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="social-profile-bio">
+      <div class="social-profile-name">
+        {{ displayed_user.full_name|default:displayed_user.username }}
+      </div>
+      {% if profile and profile.bio %}
+      <p class="mb-0">{{ profile.bio|linebreaksbr }}</p>
+      {% endif %} {% if profile %}
+      <div class="social-profile-extra">
+        {% if profile.location %}
+        <span><i class="bi bi-geo-alt" aria-hidden="true"></i></span>
+        {{ profile.location }} {% endif %} {% if profile.website %}
+        <a
+          href="{{ profile.website }}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {{ profile.website }}
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+      <div class="social-profile-actions">
+        {% if is_owner %}<a
+          class="btn btn-outline-secondary"
+          href="{% url 'edit_profile' %}"
+          >Edit Profile</a
+        >{% endif %}
+        {% if not is_owner %}
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'toggle_follow' username=displayed_user.username %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}" />
+          <button class="btn {% if is_following %}btn-outline-secondary{% else %}btn-primary{% endif %}" type="submit">
+            {% if is_following %}Following · Unfollow{% else %}Follow{% endif %}
+          </button>
+        </form>
+        {% else %}
+        <a class="btn btn-primary" href="{% url 'login' %}?next={{ request.path|urlencode }}">Log in to follow</a>
+        {% endif %}
+        {% endif %}
+        <button
+          class="btn btn-primary"
+          type="button"
+          data-bs-toggle="modal"
+          data-bs-target="#shareProfileModal"
+        >
+          Share Profile
+        </button>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if can_view_profile %} {% if is_owner %}
+  <section
+    class="social-profile-highlights"
+    aria-labelledby="profile-highlights-title"
+  >
+    <h2 id="profile-highlights-title" class="h6 mb-3">Story Highlights</h2>
+    <button
+      class="social-profile-highlight"
+      type="button"
+      data-bs-toggle="modal"
+      data-bs-target="#highlightsModal"
+    >
+      <span class="social-profile-highlight-icon"
+        ><i class="bi bi-plus-lg" aria-hidden="true"></i
+      ></span>
+      <span>New</span>
+    </button>
+  </section>
+  {% endif %}
+
+  <section class="social-profile-grid-section" aria-label="Profile content">
+    <div
+      class="social-profile-tabs"
+      role="tablist"
+      aria-label="Profile content tabs"
+    >
+      <button
+        class="social-profile-tab"
+        type="button"
+        role="tab"
+        aria-selected="true"
+        data-profile-tab="post"
+      >
+        <i class="bi bi-grid-3x3" aria-hidden="true"></i><span>Posts</span>
+      </button>
+      <button
+        class="social-profile-tab"
+        type="button"
+        role="tab"
+        aria-selected="false"
+        data-profile-tab="reel"
+      >
+        <i class="bi bi-play-btn" aria-hidden="true"></i><span>Reels</span>
+      </button>
+      <button
+        class="social-profile-tab"
+        type="button"
+        role="tab"
+        aria-selected="false"
+        data-profile-tab="reposts"
+      >
+        <i class="bi bi-arrow-repeat" aria-hidden="true"></i
+        ><span>Reposts</span>
+      </button>
+      <button
+        class="social-profile-tab"
+        type="button"
+        role="tab"
+        aria-selected="false"
+        data-profile-tab="tagged"
+      >
+        <i class="bi bi-person-square" aria-hidden="true"></i
+        ><span>Tagged</span>
+      </button>
+    </div>
+    {% if content_items %}
+    <div class="social-profile-grid" data-profile-grid>
+      {% for item in content_items %} {% if item.post %}
+      <a
+        class="social-profile-tile"
+        data-content-kind="post"
+        href="{% url 'post_detail' post_id=item.post.pk %}"
+        aria-label="View post: {{ item.post.caption|default:'Photo post' }}"
+      >
+        {% if item.preview_url %}<img
+          src="{{ item.preview_url }}"
+          alt="{{ item.post.caption }}"
+          loading="lazy"
+        />{% elif item.post.video %}<video
+          src="{{ item.post.video.url }}"
+          muted
+          playsinline
+          preload="metadata"
+        ></video>{% else %}<span class="social-profile-avatar" aria-hidden="true"
+          ><i class="bi bi-image"></i></span
+        >{% endif %} {% if item.images|length > 1 %}<span
+          class="social-profile-tile-mark"
+          aria-label="Multiple photos"
+          ><i class="bi bi-images" aria-hidden="true"></i></span
+        >{% endif %}
+      </a>
+      {% else %}
+      <a
+        class="social-profile-tile"
+        data-content-kind="reel"
+        href="{% url 'reel_detail' reel_id=item.reel.pk %}"
+        aria-label="View reel: {{ item.reel.caption|default:'Video reel' }}"
+      >
+        {% if item.preview_url %}<img
+          src="{{ item.preview_url }}"
+          alt="{{ item.reel.caption }}"
+          loading="lazy"
+        />{% else %}<video
+          src="{{ item.reel.video_file.url }}"
+          muted
+          playsinline
+          preload="metadata"
+        ></video
+        >{% endif %}
+        <span class="social-profile-tile-mark" aria-label="Reel"
+          ><i class="bi bi-play-fill" aria-hidden="true"></i
+        ></span>
+      </a>
+      {% endif %} {% endfor %}
+    </div>
+    <p class="social-profile-empty" data-profile-filter-empty hidden></p>
+    {% else %}
+    <p class="social-profile-empty">No posts or reels yet</p>
+    {% endif %}
+  </section>
+  {% endif %}
+</section>
+
+<div
+  class="modal fade"
+  id="shareProfileModal"
+  tabindex="-1"
+  aria-labelledby="shareProfileTitle"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title fs-5" id="shareProfileTitle">Share profile</h2>
+        <button
+          class="btn-close"
+          type="button"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label" for="profileShareUrl">Profile link</label>
+        <input
+          class="form-control social-profile-share-url"
+          id="profileShareUrl"
+          value="{{ profile_url }}"
+          readonly
+        />
+        <p
+          class="alert alert-success mt-3 mb-0"
+          data-profile-share-feedback
+          hidden
+          role="status"
+        ></p>
+      </div>
+      <div class="modal-footer">
+        <button
+          class="btn btn-outline-secondary"
+          type="button"
+          data-profile-copy
+        >
+          Copy Link
+        </button>
+        <button class="btn btn-primary" type="button" data-profile-share>
+          Share
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="highlightsModal"
+  tabindex="-1"
+  aria-labelledby="highlightsTitle"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title fs-5" id="highlightsTitle">Story Highlights</h2>
+        <button
+          class="btn-close"
+          type="button"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">Story highlights are not available yet.</div>
+    </div>
+  </div>
+</div>
+{% endwith %} {% endblock %} {% block extra_scripts %}
+<script>
+  const profileTabs = document.querySelectorAll("[data-profile-tab]");
+  const profileTiles = document.querySelectorAll("[data-content-kind]");
+  const filteredEmptyState = document.querySelector(
+    "[data-profile-filter-empty]",
+  );
+  const tabEmptyMessages = {
+    post: "No posts yet",
+    reel: "No reels yet",
+    reposts: "No reposts yet",
+    tagged: "No tagged posts yet",
+  };
+
+  profileTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const selectedKind = tab.dataset.profileTab;
+      let visibleCount = 0;
+      profileTabs.forEach((item) => {
+        const selected = item === tab;
+        item.setAttribute("aria-selected", String(selected));
+      });
+      profileTiles.forEach((tile) => {
+        const visible = tile.dataset.contentKind === selectedKind;
+        tile.hidden = !visible;
+        if (visible) visibleCount += 1;
+      });
+      if (filteredEmptyState) {
+        filteredEmptyState.textContent = tabEmptyMessages[selectedKind];
+        filteredEmptyState.hidden = visibleCount > 0;
+      }
+    });
+  });
+
+  const profileShareUrl = document.querySelector("#profileShareUrl");
+  const shareFeedback = document.querySelector("[data-profile-share-feedback]");
+  const showShareFeedback = (message) => {
+    if (!shareFeedback) return;
+    shareFeedback.textContent = message;
+    shareFeedback.hidden = false;
+  };
+  const copyProfileLink = async () => {
+    try {
+      await navigator.clipboard.writeText(profileShareUrl.value);
+    } catch {
+      profileShareUrl.select();
+      document.execCommand("copy");
+    }
+    showShareFeedback("Profile link copied.");
+  };
+
+  document
+    .querySelector("[data-profile-copy]")
+    ?.addEventListener("click", copyProfileLink);
+  document
+    .querySelector("[data-profile-share]")
+    ?.addEventListener("click", async () => {
+      if (!navigator.share) {
+        await copyProfileLink();
+        return;
+      }
+      try {
+        await navigator.share({
+          title: document.title,
+          url: profileShareUrl.value,
+        });
+        showShareFeedback("Profile shared.");
+      } catch (error) {
+        if (error.name !== "AbortError")
+          showShareFeedback("Unable to share this profile.");
+      }
+    });
+</script>
+{% endblock %}

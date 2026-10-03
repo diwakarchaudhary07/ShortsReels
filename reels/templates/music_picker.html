@@ -1,0 +1,45 @@
+<dialog
+  class="song-picker-dialog"
+  data-music-picker
+  data-search-url="{% url 'music_search' %}"
+  data-trending-url="{% url 'music_trending' %}"
+  aria-labelledby="music-picker-title"
+>
+  <div class="song-dialog-heading">
+    <div>
+      <p class="post-eyebrow mb-1">REELO MUSIC</p>
+      <h2 class="h5 mb-0" id="music-picker-title">Add Music</h2>
+    </div>
+    <button
+      class="post-icon-button"
+      type="button"
+      data-music-close
+      aria-label="Close music picker"
+    >
+      <i class="bi bi-x-lg" aria-hidden="true"></i>
+    </button>
+  </div>
+  <div class="music-picker-body">
+    <label class="visually-hidden" for="music-search-input">Search songs</label>
+    <input
+      class="form-control"
+      id="music-search-input"
+      type="search"
+      maxlength="100"
+      placeholder="Search songs or artists..."
+      autocomplete="off"
+      data-music-search
+    />
+    <div class="music-picker-tabs" role="tablist" aria-label="Music library">
+      <button type="button" role="tab" aria-selected="true" data-music-tab="trending">
+        <i class="bi bi-fire" aria-hidden="true"></i> Trending
+      </button>
+      <button type="button" role="tab" aria-selected="false" data-music-tab="search">
+        <i class="bi bi-search" aria-hidden="true"></i> Search
+      </button>
+    </div>
+    <button class="music-clear-selection" type="button" data-music-clear>Remove selected music</button>
+    <p class="music-picker-status" data-music-status role="status" aria-live="polite"></p>
+    <div class="song-list" data-music-results></div>
+  </div>
+</dialog>

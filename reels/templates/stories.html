@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Stories | Reelo{% endblock %}
+{% block content %}
+<section class="post-feed mx-auto py-3">
+  <header class="post-feed-heading">
+    <div>
+      <p class="post-eyebrow mb-1">Moments that disappear</p>
+      <h1 class="h3 mb-0">Stories</h1>
+    </div>
+    <a class="btn btn-primary" href="{% url 'create_story' %}">
+      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Create story
+    </a>
+  </header>
+  {% for story in stories %}
+  <article class="post-feed-card">
+    <header class="post-feed-author">
+      <a href="{% url 'profile_detail' username=story.user.username %}">@{{ story.user.username }}</a>
+      <span>Expires {{ story.expires_at|date:"M j, g:i a" }}</span>
+    </header>
+    {% if story.image %}
+    <img class="post-feed-media" src="{{ story.image.url }}" alt="Story by {{ story.user.username }}" />
+    {% elif story.video %}
+    <video class="post-feed-media" src="{{ story.video.url }}" controls playsinline></video>
+    {% endif %}
+    <div class="post-feed-copy">
+      {% if story.caption %}<p class="post-feed-caption">{{ story.caption }}</p>{% endif %}
+      {% if story.song %}
+      <div class="post-feed-meta"><span><i class="bi bi-music-note" aria-hidden="true"></i>
+        {% if story.song.attribution_url %}
+        <a href="{{ story.song.attribution_url }}" target="_blank" rel="noopener noreferrer">{{ story.song.title }}{% if story.song.artist %} · {{ story.song.artist }}{% endif %} · {{ story.song.attribution }}</a>
+        {% else %}{{ story.song.title }}{% if story.song.artist %} · {{ story.song.artist }}{% endif %}{% endif %}
+      </span></div>
+      {% endif %}
+    </div>
+  </article>
+  {% empty %}
+  <div class="post-feed-empty">
+    <i class="bi bi-clock-history" aria-hidden="true"></i>
+    <h2 class="h5">No active stories</h2>
+    <p>Share a moment that stays up for 24 hours.</p>
+    <a class="btn btn-primary" href="{% url 'create_story' %}">Create a story</a>
+  </div>
+  {% endfor %}
+</section>
+{% endblock %}

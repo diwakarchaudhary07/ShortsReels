@@ -1,37 +1,113 @@
-{% extends "base.html" %} {% block title %}Reelo | Home{% endblock %}
-<!-- Separate Django template blocks. -->
+{% extends "base.html" %}
+{% block title %}Home | Reelo{% endblock %}
 {% block content %}
-<section class="home-welcome py-3 py-md-5">
-  <div class="row align-items-center g-4">
-    <div class="col-lg-7">
-      <p
-        class="text-uppercase fw-bold small mb-2"
-        style="color: var(--reelo-red)"
-      >
-        Your short-video space
-      </p>
-      <h1 class="display-5 fw-bold mb-3">
-        A little scroll.<br />A lot of Reelo.
-      </h1>
-      <p class="lead text-body-secondary mb-4">
-        Find your next favorite moment in the Reels feed.
-      </p>
-      <a class="btn btn-primary btn-lg" href="{% url 'reels_feed' %}"
-        >Explore Reels</a
-      >
+<section class="post-feed mx-auto py-3" aria-labelledby="feed-title">
+  <header class="post-feed-heading">
+    <div>
+      <p class="post-eyebrow mb-1">Your community</p>
+      <h1 class="h3 mb-0" id="feed-title">Home feed</h1>
     </div>
-    <div class="col-lg-5">
-      <div class="social-empty">
-        <i class="bi bi-play-btn" aria-hidden="true"></i>
-        <h2 class="h5">Your feed is ready</h2>
-        <p class="text-body-secondary mb-3">
-          Watch the latest videos or share one of your own.
-        </p>
-        <a class="btn btn-outline-dark" href="{% url 'create_reel' %}"
-          >Create a reel</a
-        >
+    {% if user.is_authenticated %}
+    <a class="btn btn-outline-secondary" href="{% url 'stories' %}">Stories</a>
+    <a class="btn btn-primary" href="{% url 'create_post' %}">
+      <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Create post
+    </a>
+    {% else %}
+    <a class="btn btn-primary" href="{% url 'login' %}">Log in to post</a>
+    {% endif %}
+  </header>
+
+  {% for post in posts %}
+  <article class="post-feed-card">
+    <header class="post-feed-author">
+      <a href="{% url 'profile_detail' username=post.user.username %}">
+        @{{ post.user.username }}
+      </a>
+      <span>{{ post.created_at|date:"M j, Y · g:i a" }}</span>
+    </header>
+
+    {% if post.video %}
+    <video class="post-feed-media" src="{{ post.video.url }}" controls playsinline preload="metadata">
+      Your browser does not support video playback.
+    </video>
+    {% else %}
+    {% with first_image=post.images.all|first %}
+      {% if first_image and first_image.image.name %}
+      <a href="{% url 'post_detail' post_id=post.pk %}" aria-label="Open post">
+        <img class="post-feed-media" src="{{ first_image.image.url }}" alt="Photo from {{ post.user.username }}'s post" loading="lazy" />
+      </a>
+      {% endif %}
+    {% endwith %}
+    {% endif %}
+
+    <div class="post-feed-copy">
+      {% if post.caption %}
+      <p class="post-feed-caption">{{ post.caption|linebreaksbr }}</p>
+      {% endif %}
+      <div class="post-feed-meta">
+        {% if post.location %}<span><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ post.location }}</span>{% endif %}
+        {% if post.song %}
+        <span>
+          <i class="bi bi-music-note" aria-hidden="true"></i>
+          {% if post.song.attribution_url %}
+          <a href="{{ post.song.attribution_url }}" target="_blank" rel="noopener noreferrer">{{ post.song }} · {{ post.song.attribution }}</a>
+          {% else %}{{ post.song }}{% endif %}
+        </span>
+        {% endif %}
+        {% if post.visibility != "public" %}<span><i class="bi bi-lock" aria-hidden="true"></i> {{ post.get_visibility_display }}</span>{% endif %}
+      </div>
+      <div class="post-feed-actions">
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'toggle_post_like' post_id=post.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}" />
+          <button class="post-feed-action{% if post.viewer_liked %} is-active{% endif %}" type="submit" aria-label="{% if post.viewer_liked %}Unlike{% else %}Like{% endif %} post">
+            <i class="bi {% if post.viewer_liked %}bi-heart-fill{% else %}bi-heart{% endif %}" aria-hidden="true"></i>
+            <span>{{ post.likes_total }}</span>
+          </button>
+        </form>
+        <form method="post" action="{% url 'toggle_post_save' post_id=post.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}" />
+          <button class="post-feed-action{% if post.viewer_saved %} is-active{% endif %}" type="submit" aria-label="{% if post.viewer_saved %}Unsave{% else %}Save{% endif %} post">
+            <i class="bi {% if post.viewer_saved %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}" aria-hidden="true"></i>
+            <span>{{ post.saves_total }}</span>
+          </button>
+        </form>
+        {% else %}
+        <span class="post-feed-action" aria-label="{{ post.likes_total }} likes">
+          <i class="bi bi-heart" aria-hidden="true"></i><span>{{ post.likes_total }}</span>
+        </span>
+        {% endif %}
+        <a class="post-feed-action post-feed-open" href="{% url 'post_detail' post_id=post.pk %}">
+          View post <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        </a>
       </div>
     </div>
+  </article>
+  {% empty %}
+  <div class="post-feed-empty">
+    <i class="bi bi-images" aria-hidden="true"></i>
+    <h2 class="h5">Your feed is just getting started</h2>
+    <p>Share a moment or follow people to see their public posts here.</p>
+    {% if user.is_authenticated %}
+    <a class="btn btn-primary" href="{% url 'create_post' %}">Create your first post</a>
+    {% else %}
+    <a class="btn btn-primary" href="{% url 'login' %}">Log in</a>
+    {% endif %}
   </div>
+  {% endfor %}
+
+  {% if page_obj.has_other_pages %}
+  <nav class="post-feed-pagination" aria-label="Feed pages">
+    {% if page_obj.has_previous %}
+    <a class="btn btn-outline-secondary" href="?page={{ page_obj.previous_page_number }}">Newer posts</a>
+    {% endif %}
+    <span>Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}
+    <a class="btn btn-outline-secondary" href="?page={{ page_obj.next_page_number }}">Older posts</a>
+    {% endif %}
+  </nav>
+  {% endif %}
 </section>
 {% endblock %}

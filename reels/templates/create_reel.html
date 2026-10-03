@@ -32,7 +32,26 @@
         >
         {{ form.video_file }}
         <div class="form-text">Choose a vertical video for the Reels feed.</div>
+        <button
+          class="btn btn-outline-dark mt-2"
+          type="button"
+          data-camera-open
+          data-camera-modes="video"
+          data-camera-video-target="#{{ form.video_file.id_for_label }}"
+        >
+          <i class="bi bi-camera-video me-1" aria-hidden="true"></i>Record with camera
+        </button>
         {{ form.video_file.errors }}
+      </div>
+      <div class="mb-4">
+        <label
+          class="form-label fw-semibold"
+          for="{{ form.thumbnail.id_for_label }}"
+          >Thumbnail</label
+        >
+        {{ form.thumbnail }}
+        <div class="form-text">Optional cover image for your reel.</div>
+        {{ form.thumbnail.errors }}
       </div>
       <div class="mb-4">
         <label
@@ -41,6 +60,34 @@
           >Caption</label
         >
         {{ form.caption }} {{ form.caption.errors }}
+      </div>
+      <div class="mb-4">
+        <label class="form-label fw-semibold" for="{{ form.song.id_for_label }}"
+          >Music</label
+        >
+        {{ form.song }}
+        <p class="small text-secondary mb-2" data-music-selected-label>No music selected</p>
+        <button class="btn btn-outline-dark" type="button" data-music-picker-open data-music-target="#{{ form.song.id_for_label }}">
+          <i class="bi bi-music-note-beamed me-1" aria-hidden="true"></i>Add Music
+        </button>
+        {{ form.song.errors }}
+      </div>
+      <div class="mb-4">
+        <label
+          class="form-label fw-semibold"
+          for="{{ form.location.id_for_label }}"
+          >Location</label
+        >
+        {{ form.location }} {{ form.location.errors }}
+      </div>
+      <div class="form-check mb-4">
+        {{ form.is_comments_enabled }}
+        <label
+          class="form-check-label"
+          for="{{ form.is_comments_enabled.id_for_label }}"
+          >Allow comments</label
+        >
+        {{ form.is_comments_enabled.errors }}
       </div>
       <div class="d-flex justify-content-end gap-2">
         <a class="btn btn-outline-secondary" href="{% url 'reels_feed' %}"

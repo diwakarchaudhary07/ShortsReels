@@ -1,0 +1,63 @@
+<dialog class="reelo-camera" data-camera-dialog aria-label="Reelo camera">
+  <div class="reelo-camera-shell">
+    <video
+      class="reelo-camera-live"
+      data-camera-live
+      autoplay
+      muted
+      playsinline
+      aria-label="Live camera preview"
+    ></video>
+    <video
+      class="reelo-camera-captured"
+      data-camera-captured
+      controls
+      playsinline
+      hidden
+      aria-label="Recorded video preview"
+    ></video>
+    <img
+      class="reelo-camera-photo"
+      data-camera-photo
+      alt="Captured photo preview"
+      hidden
+    />
+
+    <header class="reelo-camera-top">
+      <button class="reelo-camera-icon" type="button" data-camera-close aria-label="Close camera">
+        <i class="bi bi-x-lg" aria-hidden="true"></i>
+      </button>
+      <span class="reelo-camera-brand">REELO CAMERA</span>
+      <span class="reelo-camera-top-spacer" aria-hidden="true"></span>
+    </header>
+
+    <div class="reelo-camera-error" data-camera-error role="alert" aria-live="assertive" hidden>
+      <p data-camera-error-message></p>
+      <button class="btn btn-light" type="button" data-camera-retry>Allow camera</button>
+    </div>
+
+    <div class="reelo-camera-controls" data-camera-controls>
+      <div class="reelo-camera-modes" role="group" aria-label="Capture mode">
+        <button type="button" data-camera-mode="photo">PHOTO</button>
+        <button type="button" data-camera-mode="video">VIDEO</button>
+      </div>
+      <div class="reelo-camera-actions">
+        <button class="reelo-camera-icon" type="button" data-camera-flip aria-label="Flip camera">
+          <i class="bi bi-arrow-repeat" aria-hidden="true"></i>
+        </button>
+        <button class="reelo-camera-shutter" type="button" data-camera-capture aria-label="Capture photo">
+          <span></span>
+        </button>
+        <span class="reelo-camera-flip-placeholder" aria-hidden="true"></span>
+      </div>
+      <p class="reelo-camera-status" data-camera-status role="status" aria-live="polite"></p>
+    </div>
+
+    <div class="reelo-camera-review" data-camera-review hidden>
+      <div class="reelo-camera-review-actions">
+        <button class="btn btn-outline-light" type="button" data-camera-retake>Retake</button>
+        <button class="btn btn-primary" type="button" data-camera-use>Use photo</button>
+      </div>
+    </div>
+  </div>
+</dialog>

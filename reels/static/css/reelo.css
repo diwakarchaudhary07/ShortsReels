@@ -286,6 +286,7 @@ a:hover { color: var(--reelo-red); }
 .reel-caption a { color: #fff; font-weight: 700; text-decoration: none; pointer-events: auto; }
 .reel-caption p { margin: .4rem 0 0; overflow-wrap: anywhere; }
 .reel-actions { display: flex; flex-direction: column; align-items: center; gap: .85rem; }
+.reel-action-group { display: grid; justify-items: center; gap: .2rem; }
 .reel-action {
   display: grid;
   width: 46px;
@@ -500,4 +501,96 @@ a:hover { color: var(--reelo-red); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}
+.reel-action-count { color: var(--reelo-ink); font-size: .68rem; font-weight: 700; line-height: 1; }
+.reel-caption-meta { display: flex; flex-wrap: wrap; gap: .35rem .9rem; margin-top: .55rem; color: #f1f1f1; font-size: .78rem; }
+.reel-caption-meta .bi { color: var(--reelo-orange); }
+
+.post-feed { width: min(100%, 680px); }
+.post-feed-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.post-feed-card { overflow: hidden; margin-bottom: 1rem; border: 1px solid var(--reelo-line); border-radius: 8px; background: #fff; }
+.post-feed-author { display: flex; align-items: center; justify-content: space-between; gap: .8rem; padding: .85rem 1rem; }
+.post-feed-author a { color: var(--reelo-ink); font-weight: 700; text-decoration: none; }
+.post-feed-author span { color: var(--reelo-muted); font-size: .78rem; }
+.post-feed-media { display: block; width: 100%; max-height: 75vh; object-fit: contain; background: #111; }
+.post-feed-copy { padding: .85rem 1rem 1rem; }
+.post-feed-caption { margin-bottom: .5rem; overflow-wrap: anywhere; }
+.post-feed-meta { display: flex; flex-wrap: wrap; gap: .35rem 1rem; color: var(--reelo-muted); font-size: .84rem; }
+.post-feed-meta .bi { color: var(--reelo-red); }
+.post-feed-actions { display: flex; align-items: center; gap: 1rem; margin-top: .75rem; }
+.post-feed-actions form { margin: 0; }
+.post-feed-action { display: inline-flex; align-items: center; gap: .4rem; padding: .25rem 0; border: 0; background: transparent; color: var(--reelo-ink); font: inherit; text-decoration: none; }
+.post-feed-action .bi { font-size: 1.1rem; }
+.post-feed-action.is-active { color: var(--reelo-red); }
+.post-feed-open { margin-left: auto; color: #a8441b; font-size: .88rem; }
+.post-feed-empty { padding: 3rem 1rem; border: 1px solid var(--reelo-line); border-radius: 8px; background: #fff; text-align: center; }
+.post-feed-empty > .bi { display: block; margin-bottom: .75rem; color: var(--reelo-orange); font-size: 2.5rem; }
+.post-feed-pagination { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-block: 1rem 2rem; color: var(--reelo-muted); font-size: .88rem; }
+.post-selection-preview video, .post-share-preview video { width: 100%; max-height: 360px; object-fit: contain; background: #17191d; }
+.music-picker-body { padding: 1rem; }
+.music-picker-tabs { display: flex; gap: .5rem; margin-block: .8rem .4rem; border-bottom: 1px solid var(--reelo-line); }
+.music-picker-tabs button { padding: .55rem .7rem; border: 0; border-bottom: 2px solid transparent; background: transparent; color: var(--reelo-muted); font-weight: 650; }
+.music-picker-tabs button[aria-selected="true"] { border-bottom-color: var(--reelo-orange); color: var(--reelo-ink); }
+.music-picker-status { min-height: 1.5rem; margin: .55rem 0; color: var(--reelo-muted); font-size: .88rem; }
+.music-song-option { display: flex; align-items: center; gap: .7rem; padding: .65rem .25rem; border-bottom: 1px solid var(--reelo-line); }
+.music-song-cover { width: 48px; height: 48px; flex: 0 0 48px; border-radius: 5px; object-fit: cover; background: #fff4e6; }
+.music-song-cover-empty { display: grid; place-items: center; color: #a8441b; font-size: 1.2rem; }
+.music-song-copy { display: grid; min-width: 0; flex: 1; gap: .08rem; }
+.music-song-copy strong, .music-song-copy span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.music-song-copy strong { font-size: .9rem; }
+.music-song-copy span, .music-song-copy small, .music-no-preview { color: var(--reelo-muted); font-size: .78rem; }
+.music-song-copy .music-song-attribution a { color: #a8441b; }
+.music-song-option audio { width: 128px; height: 34px; }
+.music-song-add { padding: .32rem .65rem; border: 1px solid var(--reelo-orange); border-radius: 999px; background: #fff4e6; color: #8d3e16; font-weight: 700; }
+.music-song-add:hover { background: var(--reelo-orange); }
+.music-clear-selection { padding: .25rem 0; border: 0; background: transparent; color: #a8441b; font-size: .82rem; }
+
+.reelo-camera {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: #08090b;
+  color: #fff;
+}
+.reelo-camera::backdrop { background: #08090b; }
+.reelo-camera-shell { position: relative; display: grid; width: 100%; height: 100%; place-items: center; overflow: hidden; background: #08090b; }
+.reelo-camera-live, .reelo-camera-captured, .reelo-camera-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; background: #08090b; }
+.reelo-camera-live { object-fit: cover; }
+.reelo-camera-top { position: absolute; z-index: 2; inset: 0 0 auto; display: flex; align-items: center; justify-content: space-between; padding: max(1rem, env(safe-area-inset-top)) 1rem 1rem; background: linear-gradient(rgb(0 0 0 / 48%), transparent); }
+.reelo-camera-brand { font-size: .82rem; font-weight: 800; letter-spacing: .18em; }
+.reelo-camera-top-spacer, .reelo-camera-icon { width: 46px; height: 46px; }
+.reelo-camera-icon { display: grid; place-items: center; border: 1px solid rgb(255 255 255 / 32%); border-radius: 50%; background: rgb(0 0 0 / 32%); color: #fff; font-size: 1.2rem; }
+.reelo-camera-icon:hover { background: rgb(255 255 255 / 20%); }
+.reelo-camera-controls { position: absolute; z-index: 2; inset: auto 0 0; padding: 1rem 1.25rem max(1.25rem, env(safe-area-inset-bottom)); background: linear-gradient(transparent, rgb(0 0 0 / 72%)); }
+.reelo-camera-modes { display: flex; justify-content: center; gap: 1.25rem; margin-bottom: 1.2rem; }
+.reelo-camera-modes button { padding: .45rem .7rem; border: 0; border-radius: 999px; background: transparent; color: rgb(255 255 255 / 70%); font-size: .78rem; font-weight: 800; letter-spacing: .08em; }
+.reelo-camera-modes button.is-active { background: rgb(255 255 255 / 22%); color: #fff; }
+.reelo-camera-actions { display: flex; min-height: 76px; align-items: center; justify-content: center; gap: clamp(2.5rem, 15vw, 5rem); }
+.reelo-camera-flip-placeholder { width: 46px; height: 46px; }
+.reelo-camera-shutter { display: grid; width: 74px; height: 74px; place-items: center; border: 4px solid #fff; border-radius: 50%; background: transparent; box-shadow: 0 0 0 2px rgb(0 0 0 / 28%); }
+.reelo-camera-shutter span { width: 56px; height: 56px; border-radius: 50%; background: #fff; transition: border-radius 140ms ease, transform 140ms ease; }
+.reelo-camera-shutter:active span { transform: scale(.9); }
+.reelo-camera-shutter.is-recording span { border-radius: 9px; background: #f04444; transform: scale(.62); }
+.reelo-camera-status { min-height: 1.25rem; margin: .8rem 0 0; color: #fff; font-size: .83rem; text-align: center; text-shadow: 0 1px 3px #000; }
+.reelo-camera-error { position: relative; z-index: 3; width: min(88%, 420px); padding: 1.5rem; border: 1px solid rgb(255 255 255 / 20%); border-radius: 1rem; background: rgb(24 25 29 / 92%); text-align: center; }
+.reelo-camera-error p { margin-bottom: 1rem; line-height: 1.5; }
+.reelo-camera-review { position: absolute; z-index: 2; inset: auto 0 0; padding: 1rem 1.25rem max(1.25rem, env(safe-area-inset-bottom)); background: linear-gradient(transparent, rgb(0 0 0 / 78%)); }
+.reelo-camera-review-actions { display: flex; justify-content: center; gap: 1rem; }
+.reelo-camera-review-actions > button { min-width: 132px; }
+
+@media (max-width: 575.98px) {
+  .post-feed-heading { align-items: flex-start; }
+  .post-feed-author { align-items: flex-start; flex-direction: column; gap: .1rem; }
+  .post-feed-actions { gap: .75rem; }
+  .music-song-option { flex-wrap: wrap; }
+  .music-song-option audio { order: 3; width: 100%; }
+  .reelo-camera-controls { padding-inline: .75rem; }
+  .reelo-camera-review-actions > button { min-width: 0; flex: 1; }
 }

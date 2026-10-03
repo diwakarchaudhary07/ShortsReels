@@ -1,0 +1,178 @@
+{% extends "base.html" %} {% block content %}
+<style>
+  .content-detail {
+    width: min(100%, 900px);
+    margin-inline: auto;
+  }
+  .content-detail-panel {
+    overflow: hidden;
+    border: 1px solid var(--reelo-line);
+    border-radius: 8px;
+    background: var(--reelo-white);
+  }
+  .content-detail-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--reelo-line);
+  }
+  .content-detail-media {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: var(--reelo-ink);
+  }
+  .content-detail-media img {
+    width: 100%;
+    max-height: 75vh;
+    object-fit: contain;
+  }
+  .content-detail-video {
+    display: block;
+    width: 100%;
+    max-height: 78vh;
+    background: #090a0b;
+  }
+  .content-detail-copy {
+    padding: 1.25rem;
+    overflow-wrap: anywhere;
+  }
+  .content-detail-user {
+    color: var(--reelo-ink);
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .content-detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    color: var(--reelo-muted);
+    font-size: 0.9rem;
+  }
+  .content-detail-meta .bi {
+    color: var(--reelo-red);
+  }
+  @media (max-width: 575.98px) {
+    .content-detail-heading,
+    .content-detail-copy {
+      padding: 1rem;
+    }
+  }
+</style>
+
+<section class="content-detail py-2">
+  <article class="content-detail-panel">
+    <header class="content-detail-heading">
+      <a
+        class="content-detail-user"
+        href="{% url 'profile_detail' username=content_user.username %}"
+      >
+        @{{ content_user.username }}
+      </a>
+      <a
+        class="btn btn-outline-secondary btn-sm"
+        href="{% url 'profile_detail' username=content_user.username %}"
+        aria-label="Back to profile"
+      >
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        <span class="d-none d-sm-inline">Profile</span>
+      </a>
+    </header>
+    {% if reel %}
+    <video
+      class="content-detail-video"
+      src="{{ reel.video_file.url }}"
+      {%
+      if
+      thumbnail_url
+      %}
+      poster="{{ thumbnail_url }}"
+      {%
+      endif
+      %}
+      controls
+      playsinline
+      preload="metadata"
+    >
+      Your browser does not support video playback.
+    </video>
+    <div class="content-detail-copy">
+      {% if reel.caption %}
+      <p class="mb-3">{{ reel.caption|linebreaksbr }}</p>
+      {% endif %}
+      <div class="content-detail-meta">
+        {% if reel.location %}
+        <span><i class="bi bi-geo-alt" aria-hidden="true"></i></span>
+        {{ reel.location }} {% endif %} {% if reel.song %}
+        <span><i class="bi bi-music-note" aria-hidden="true"></i></span>
+        {% if reel.song.attribution_url %}
+        <a href="{{ reel.song.attribution_url }}" target="_blank" rel="noopener noreferrer">{{ reel.song }} · {{ reel.song.attribution }}</a>
+        {% else %}{{ reel.song }}{% endif %} {% endif %}
+      </div>
+    </div>
+    {% else %}
+    <div class="content-detail-media">
+      {% if post.video %}
+      <video class="content-detail-video" src="{{ post.video.url }}" controls playsinline preload="metadata">
+        Your browser does not support video playback.
+      </video>
+      {% else %}{% for image in post_images %} {% if image.image.name %}
+      <img
+        src="{{ image.image.url }}"
+        alt="Photo {{ forloop.counter }} from {{ post.user.username }}'s post"
+      />
+      {% endif %} {% endfor %}{% endif %}
+    </div>
+    <div class="content-detail-copy">
+      <a
+        class="content-detail-user"
+        href="{% url 'profile_detail' username=post.user.username %}"
+        >@{{ post.user.username }}</a
+      >
+      {% if post.caption %}
+      <p class="mt-2 mb-3">{{ post.caption|linebreaksbr }}</p>
+      {% endif %} {% if post.song %}
+      <div class="content-detail-meta">
+        <span
+          ><i class="bi bi-music-note" aria-hidden="true"></i>
+          {% if post.song.attribution_url %}
+          <a href="{{ post.song.attribution_url }}" target="_blank" rel="noopener noreferrer">{{ post.song }} · {{ post.song.attribution }}</a>
+          {% else %}{{ post.song }}{% endif %}
+        </span
+        >
+      </div>
+      {% endif %}
+      <div class="content-detail-meta mt-3">
+        {% if post.location %}
+        <span><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ post.location }}</span>
+        {% endif %}
+        <span>{{ post.get_visibility_display }}</span>
+      </div>
+      {% if user.is_authenticated %}
+      <div class="post-feed-actions mt-3">
+        <form method="post" action="{% url 'toggle_post_like' post_id=post.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}" />
+          <button class="post-feed-action{% if post.viewer_liked %} is-active{% endif %}" type="submit">
+            <i class="bi {% if post.viewer_liked %}bi-heart-fill{% else %}bi-heart{% endif %}" aria-hidden="true"></i>
+            {{ post.likes_total|default:post.like_count }} Like{{ post.likes_total|default:post.like_count|pluralize }}
+          </button>
+        </form>
+        <form method="post" action="{% url 'toggle_post_save' post_id=post.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.path }}" />
+          <button class="post-feed-action{% if post.viewer_saved %} is-active{% endif %}" type="submit">
+            <i class="bi {% if post.viewer_saved %}bi-bookmark-fill{% else %}bi-bookmark{% endif %}" aria-hidden="true"></i>
+            Save
+          </button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </article>
+</section>
+{% endblock %}
